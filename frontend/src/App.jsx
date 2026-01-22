@@ -11,14 +11,14 @@ import AboutPage from "./pages/AppPages/AboutPage";
 import ServicesPage from "./pages/AppPages/ServicesPage";
 // page de client :
 import DashboardPage from "./pages/client/DashboardPage";
-// import MyVehiclesPage from "./pages/client/MyVehiclePage";
+import MyVehiclePage from "./pages/client/MyVehiclePage";
 // import ReservationsPage from "./pages/client/ReservationPage";
 // import NewReservationPage from "./pages/client/NewReservationPage";
 // import DevisPage from "./pages/client/DevisPage";
-// import ProfilePage from "./pages/client/ProfilePage";
+import ProfilePage from "./pages/client/ProfilePage";
 
 function App() {
-  return (
+  return ( 
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <main className="flex-grow">
@@ -33,13 +33,15 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<DashboardPage />}/>
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/vehicles" element={<MyVehiclePage />} />
           {/* CLIENT */}
           {/* <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/vehicles" element={<MyVehiclesPage />} />
+          
           <Route path="/reservations" element={<ReservationsPage />} />
           <Route path="/new-reservations" element={<NewReservationPage />} />
           <Route path="/devis" element={<DevisPage />} />
-          <Route path="/profile" element={<ProfilePage />} /> */}
+           */}
 
           {/* TODO Admin plus tard */}
           {/* <Route path="/admin" element={<AdminDashboard />} /> */}

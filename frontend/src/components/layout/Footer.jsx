@@ -152,7 +152,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg">
                 <span className="text-slate-400">Samedi</span>
-                <span className="text-white font-semibold">9h - 17h</span>
+                <span className="text-white font-semibold">8h - 17h</span>
               </div>
               <div className="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg">
                 <span className="text-slate-400">Dimanche</span>

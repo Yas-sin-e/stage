@@ -21,11 +21,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = (updatedData) => {
-    setUser((prev) => {
-      const updatedUser = { ...prev, ...updatedData };
-      localStorage.setItem("autoexpert_user", JSON.stringify(updatedUser));
-      return updatedUser;
-    });
+    const updatedUser = { ...user, ...updatedData };
+    setUser(updatedUser);
+    localStorage.setItem("autoexpert_user", JSON.stringify(updatedUser));
   };
 
   useEffect(() => {

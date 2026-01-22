@@ -148,12 +148,10 @@ const Navbar = () => {
                         <li key={j}>
                           <Link
                             to={subItem.path}
+                            onClick={() => setShowClientDropdown(false)}
                             className="block px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-                            onClick={()=>{setShowClientDropdown(false)}}
-                            
                           >
                             {subItem.title}
-                            
                           </Link>
                         </li>
                       ))}
