@@ -12,9 +12,8 @@ import ServicesPage from "./pages/AppPages/ServicesPage";
 // page de client :
 import DashboardPage from "./pages/client/DashboardPage";
 import MyVehiclePage from "./pages/client/MyVehiclePage";
-// import ReservationsPage from "./pages/client/ReservationPage";
-// import NewReservationPage from "./pages/client/NewReservationPage";
-// import DevisPage from "./pages/client/DevisPage";
+import NewReservationPage from "./pages/client/NewReservationPage";
+
 import ProfilePage from "./pages/client/ProfilePage";
 
 function App() {
@@ -28,18 +27,22 @@ function App() {
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
-
+          
           {/* AUTH */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<DashboardPage />}/>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/vehicles" element={<MyVehiclePage />} />
+          
+
+          <Route path="/new-reservations" element={<NewReservationPage />} />
+          <Route path="/new-reservations/:id" element={<NewReservationPage />} />
           {/* CLIENT */}
           {/* <Route path="/dashboard" element={<DashboardPage />} />
           
-          <Route path="/reservations" element={<ReservationsPage />} />
-          <Route path="/new-reservations" element={<NewReservationPage />} />
+          // 
+          
           <Route path="/devis" element={<DevisPage />} />
            */}
 

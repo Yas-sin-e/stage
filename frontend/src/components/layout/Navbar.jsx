@@ -52,8 +52,8 @@ const Navbar = () => {
   const clientSubmenuItems = [
     { title: 'Dashboard', path: '/dashboard' },
     { title: 'Mes Véhicules', path: '/vehicles' },
-    { title: 'Réservations', path: '/reservations' },
-    { title: 'Devis', path: '/devis' }
+    
+    
   ];
 
   // Loader
@@ -131,10 +131,10 @@ const Navbar = () => {
                 {/* Dropdown Client */}
                 <li 
                   className="relative"
-                  onMouseEnter={() => setShowClientDropdown(true)}
                   
+
                 >
-                  <button className="flex items-center gap-1 px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50">
+                  <button onMouseEnter={() => setShowClientDropdown(true)} className="flex items-center gap-1 px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50">
                     Mon Espace
                     <svg className={`w-4 h-4 transition-transform ${showClientDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
@@ -143,7 +143,7 @@ const Navbar = () => {
 
                   {/* Dropdown Menu */}
                   {showClientDropdown && (
-                    <ul className="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 list-none">
+                    <ul  onMouseLeave={() => setShowClientDropdown(false)}className="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 list-none">
                       {clientSubmenuItems.map((subItem, j) => (
                         <li key={j}>
                           <Link
