@@ -1,57 +1,100 @@
 import { useState, useEffect } from "react";
 import AuthContext from "./AuthContext";
+import { useNavigate } from "react-router-dom";
+import api, { authService } from "../../services/api/axios";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  
-  
-  const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem("autoexpert_user", JSON.stringify(userData));
-  };
+  // ✅ هذا هو المفتاح
+  const isAuthenticated = !!user;
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem("autoexpert_user");
-  };
-
-  const updateProfile = (updatedData) => {
-    const updatedUser = { ...user, ...updatedData };
-    setUser(updatedUser);
-    localStorage.setItem("autoexpert_user", JSON.stringify(updatedUser));
-  };
-
+  // ===============================
+  // Vérifier si l'utilisateur est déjà connecté
+  // ===============================
   useEffect(() => {
-    const savedUser = localStorage.getItem("autoexpert_user");
+    checkAuth();
+  }, []);
 
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Erreur", error);
-        localStorage.removeItem("autoexpert_user");
-      }
+  const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setLoading(false);
+      return;
     }
 
-    setIsLoading(false);
-  }, []);
+    try {
+      const { data } = await api.get("/auth/me");
+      setUser(data); // data = user
+    } catch (error) {
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===============================
+  // Login
+  // ===============================
+  const login = async (email, password) => {
+    try {
+      const data = await authService.login(email, password);
+      // data = { user, token }
+
+      setUser(data.user);
+
+      if (data.user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+
+      return { success: true };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // ===============================
+  // Register
+  // ===============================
+  const register = async (userData) => {
+    try {
+      const data = await authService.register(userData);
+      setUser(data.user);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Erreur d'inscription",
+      };
+    }
+  };
+
+  // ===============================
+  // Logout
+  // ===============================
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+  };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated,
-        isLoading,
+        loading,
+        isAuthenticated,// ✅ condition ajoutée
         login,
+        register,
         logout,
-        updateProfile,
       }}
     >
       {children}

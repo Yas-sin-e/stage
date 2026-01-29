@@ -16,6 +16,10 @@ const reparationSchema = new mongoose.Schema({
     ref: 'Devis',
     required: true
   },
+   totalAmount: {
+    type: Number,
+    required: true 
+  },
   service: {
     type: String,
     required: true
@@ -26,9 +30,9 @@ const reparationSchema = new mongoose.Schema({
     default: 'pending'
   },
   startDate: Date,
-  endDate: Date,
-  completedDate: Date,
-  deliveredDate: Date,
+  estimatedEndDate: Date,
+  completedAt: Date,
+  deliveredAt: Date,
   notes: String,
   technicianNotes: String
 }, {

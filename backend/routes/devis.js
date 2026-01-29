@@ -31,6 +31,9 @@ router.put('/:id/accept', protect, async (req, res) => {
     if (!devis) {
       return res.status(404).json({ message: 'Devis non trouvé' });
     }
+    if (devis.status === 'accepted') {
+  return res.status(400).json({ message: 'Ce devis est déjà accepté' });
+}
 
     devis.status = 'accepted';
     await devis.save();
@@ -40,10 +43,12 @@ router.put('/:id/accept', protect, async (req, res) => {
       userId: req.user._id,
       vehicleId: devis.vehicleId,
       devisId: devis._id,
-      service: devis.service,
+      service: devis.serviceLabel,
+      totalAmount: devis.amount,
       status: 'pending',
       startDate: devis.dateDebut,
-      endDate: devis.dateFin
+      estimatedEndDate: devis.dateFin,
+      notes: devis.description
     });
 
     res.json({ devis, reparation });

@@ -44,7 +44,7 @@ router.post('/', protect, async (req, res) => {
 // @access  Private
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const reservation = await Reservation.findOneAndDelete({
+    const reservation = await Reservation.findOne({
       _id: req.params.id,
       userId: req.user._id
     });
@@ -53,6 +53,10 @@ router.delete('/:id', protect, async (req, res) => {
       return res.status(404).json({ message: 'Réservation non trouvée' });
     }
 
+    if (reservation.status !== 'pending') {
+      return res.status(400).json({ message: 'Impossible de supprimer ' });
+    }
+    await reservation.deleteOne();
     res.json({ message: 'Réservation supprimée' });
   } catch (error) {
     res.status(500).json({ message: error.message });

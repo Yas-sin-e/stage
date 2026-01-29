@@ -31,13 +31,15 @@ router.put('/:id/recuperer', protect, async (req, res) => {
     if (!reparation) {
       return res.status(404).json({ message: 'Réparation non trouvée' });
     }
-
+    if (reparation.status === 'delivered') {
+    return res.status(400).json({ message: 'Le véhicule est déjà  récupéré' });
+    }
     if (reparation.status !== 'completed') {
       return res.status(400).json({ message: 'La réparation n\'est pas terminée' });
     }
-
+   
     reparation.status = 'delivered';
-    reparation.deliveredDate = new Date();
+    reparation.deliveredAt = new Date();
     await reparation.save();
 
     res.json(reparation);

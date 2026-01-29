@@ -29,13 +29,43 @@ router.get('/clients', protect, adminOnly, async (req, res) => {
 
 router.delete('/clients/:id', protect, adminOnly, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Client supprimé' });
+    const userId = req.params.id;
+
+    // 1. حذف جميع سيارات العميل
+    await Vehicle.deleteMany({ userId });
+
+    // 2. حذف جميع حجوزات العميل
+    await Reservation.deleteMany({ userId });
+
+    // 3. حذف جميع الـ Devis (اختياري حسب منطق عملك)
+    await Devis.deleteMany({ userId });
+
+    // 4. أخيراً حذف العميل نفسه
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) return res.status(404).json({ message: 'Client non trouvé' });
+
+    res.json({ message: 'Client et toutes ses données ont été supprimés' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
+router.put('/clients/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { isActive } = req.body;
+    const client = await User.findByIdAndUpdate(
+      req.params.id, 
+      { isActive }, 
+      { new: true }
+    ).select('-password');
+    
+    if (!client) return res.status(404).json({ message: 'Client non trouvé' });
+    
+    res.json(client);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 // ============================================
 // GESTION VÉHICULES
 // ============================================
@@ -70,11 +100,42 @@ router.get('/reservations', protect, adminOnly, async (req, res) => {
 
 router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
   try {
-    const reservation = await Reservation.findById(req.params.id);
+    const reservation = await Reservation.findById(req.params.id)
+      .populate('serviceId'); 
+
+    if (!reservation) return res.status(404).json({ message: 'Réservation non trouvée' });
+
     reservation.status = 'accepted';
     await reservation.save();
-    res.json(reservation);
+
+    // حساب تاريخ نهاية افتراضي (مثلاً بعد يومين من البداية)
+    const defaultEndDate = new Date(reservation.date);
+    defaultEndDate.setDate(defaultEndDate.getDate() + 2);
+
+    
+    const newDevis = await Devis.create({
+      userId: reservation.userId,
+      vehicleId: reservation.vehicleId,
+      serviceId: reservation.serviceId._id, 
+      serviceLabel: reservation.serviceId.name,
+      amount: reservation.serviceId.basePrice || 0,
+      status: 'pending',
+      description: reservation.notes || 'Devis généré suite à une réservation',
+      dateDebut: reservation.date,
+       dateFin: req.body.dateFin || defaultEndDate,
+      estimatedTime: reservation.serviceId.estimatedTime || "48h", 
+      items: [
+        {
+          name: reservation.serviceId.name,
+          quantity: 1,
+          price: reservation.serviceId.basePrice || 0
+        }
+      ]
+    });
+
+    res.json({ reservation, devis: newDevis });
   } catch (error) {
+    // إذا حدث خطأ في الـ Validation سيظهر هنا
     res.status(500).json({ message: error.message });
   }
 });
@@ -100,6 +161,7 @@ router.get('/devis', protect, adminOnly, async (req, res) => {
     const devis = await Devis.find()
       .populate('userId', 'name email phone')
       .populate('vehicleId', 'brand model plate')
+      .populate('serviceId', 'name category')
       .sort('-createdAt');
     res.json(devis);
   } catch (error) {
@@ -110,16 +172,58 @@ router.get('/devis', protect, adminOnly, async (req, res) => {
 router.post('/devis', protect, adminOnly, async (req, res) => {
   try {
     const devis = await Devis.create(req.body);
+    
+    // في Mongoose 6، هذا السطر صحيح تماماً
     const populated = await devis.populate([
-      { path: 'userId', select: 'name email' },
-      { path: 'vehicleId', select: 'brand model plate' }
+      { path: 'userId', select: 'name email phone' },
+      { path: 'vehicleId', select: 'brand model plate' },
+      { path: 'serviceId', select: 'name category icon' } 
     ]);
+    
     res.status(201).json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+router.put('/devis/:id/accept', protect, adminOnly, async (req, res) => {
+  try {
+    const devis = await Devis.findById(req.params.id);
+    if (!devis) return res.status(404).json({ message: "Devis non trouvé" });
+    if (devis.status === 'accepted') {
+  return res.status(400).json({ message: "Ce devis est déjà accepté et une réparation existe déjà." });
+}
+    devis.status = 'accepted';
+    await devis.save();
+    const reparation = await Reparation.create({
+      userId: devis.userId,
+      vehicleId: devis.vehicleId,
+      devisId: devis._id,
+      service: devis.serviceLabel,
+      totalAmount: devis.amount, // نقل المبلغ الذي اتفقنا عليه
+      status: 'pending',
+      startDate: devis.dateDebut,
+      estimatedEndDate: devis.dateFin,
+      notes: devis.description
+    });
+    res.json(devis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
+// ✅ تحديث حالة الديفـي إلى مرفوض (Rejected)
+router.put('/devis/:id/reject', protect, adminOnly, async (req, res) => {
+  try {
+    const devis = await Devis.findById(req.params.id);
+    if (!devis) return res.status(404).json({ message: "Devis non trouvé" });
+
+    devis.status = 'rejected';
+    await devis.save();
+    res.json(devis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 // ============================================
 // GESTION RÉPARATIONS
 // ============================================
@@ -149,12 +253,24 @@ router.put('/reparations/:id/start', protect, adminOnly, async (req, res) => {
   }
 });
 
+router.put('/reparations/:id/Livre', protect, adminOnly, async (req, res) => {
+  try {
+    const reparation = await Reparation.findById(req.params.id);
+    reparation.status = 'delivered';
+    reparation.deliveredAt = new Date();
+    reparation.technicianNotes = req.body.technicianNotes || '';
+    await reparation.save();
+    res.json(reparation);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 router.put('/reparations/:id/complete', protect, adminOnly, async (req, res) => {
   try {
     const reparation = await Reparation.findById(req.params.id);
     reparation.status = 'completed';
-    reparation.completedDate = new Date();
-    reparation.technicianNotes = req.body.notes || '';
+    reparation.completedAt = new Date();
+    reparation.technicianNotes = req.body.technicianNotes || '';
     await reparation.save();
     res.json(reparation);
   } catch (error) {
@@ -212,6 +328,13 @@ router.delete('/services/:id', protect, adminOnly, async (req, res) => {
 
 router.get('/stats', protect, adminOnly, async (req, res) => {
   try {
+    
+    const revenue = await Reparation.aggregate([
+      { $match: { status: 'delivered' } },
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+    ]);
+
+    
     const stats = {
       totalClients: await User.countDocuments({ role: 'client' }),
       totalVehicules: await Vehicle.countDocuments(),
@@ -221,8 +344,12 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
       devisPending: await Devis.countDocuments({ status: 'pending' }),
       totalReparations: await Reparation.countDocuments(),
       reparationsInProgress: await Reparation.countDocuments({ status: 'in_progress' }),
-      reparationsCompleted: await Reparation.countDocuments({ status: 'completed' })
+      reparationsCompleted: await Reparation.countDocuments({ status: 'completed' }),
+      
+      // إضافة الأرباح هنا:
+      totalRevenue: revenue[0]?.total || 0 
     };
+
     res.json(stats);
   } catch (error) {
     res.status(500).json({ message: error.message });

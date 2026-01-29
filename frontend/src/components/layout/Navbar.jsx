@@ -51,7 +51,7 @@ const Navbar = () => {
   // ============================================
   const clientSubmenuItems = [
     { title: 'Dashboard', path: '/dashboard' },
-    { title: 'Mes Véhicules', path: '/vehicles' },
+    { title: 'Mes Véhicules', path: '/my-vehicles' },
     
     
   ];

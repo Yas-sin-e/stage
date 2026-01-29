@@ -3,7 +3,7 @@ import { useAuth } from "../../context/auth";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-   const { isAuthenticated } = useAuth();
+   const { isAuthenticated,user } = useAuth();
   const services = [
     { name: 'Tôlerie & Carrosserie', path: '/services' },
     { name: 'Mécanique Générale', path: '/services' },
@@ -15,7 +15,10 @@ const Footer = () => {
     { name: 'À propos', path: '/about' },
     { name: 'Services', path: '/services' },
     { name: 'Contact', path: '/contact' },
-    { name: 'Connexion', path: '/login' }
+  
+    isAuthenticated 
+      ? { name: 'Dashboard', path: user?.role === 'admin' ? '/admin/dashboard' : '/dashboard' }
+      : { name: 'Connexion', path: '/login' }
   ];
 
   const socialLinks = [

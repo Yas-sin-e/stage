@@ -55,7 +55,9 @@ const ServicesSection = () => {
               </p>
 
               {/* CTA Link */}
-              <button  className="group/btn inline-flex items-center gap-2 text-blue-400 font-semibold hover:gap-3 transition-all">
+              <button  
+              onClick={() => navigate('/services')}
+              className="group/btn inline-flex items-center gap-2 text-blue-400 font-semibold hover:gap-3 transition-all">
                 En savoir plus
                 <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

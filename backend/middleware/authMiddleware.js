@@ -19,11 +19,16 @@ exports.protect = async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Utilisateur non trouvé' });
     }
+    if (!req.user.isActive) {
+  return res.status(403).json({ message: 'Compte désactivé' });
+}
 
     return next();
 
   } catch (error) {
-    console.error('Erreur middleware protect:', error);
-    return res.status(401).json({ message: 'Non autorisé, token invalide' });
+     if (error.name === 'TokenExpiredError') {
+    return res.status(401).json({ message: 'Token expiré' });
   }
+  return res.status(401).json({ message: 'Token invalide' });
+}
 };
