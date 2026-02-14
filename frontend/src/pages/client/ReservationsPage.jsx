@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import api from "../../services/api/axios";
 
 const ReservationsPage = () => {
@@ -10,6 +12,7 @@ const ReservationsPage = () => {
   const [vehicles, setVehicles] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   // إعداد useForm
   const {
@@ -140,12 +143,36 @@ const ReservationsPage = () => {
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
                   Date du rendez-vous
                 </label>
-                <input
-                  type="date"
-                  min={new Date().toISOString().split("T")[0]}
-                  {...register("date", { required: "Date obligatoire" })}
-                  className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all invert-calendar-icon"
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date) => {
+                    setSelectedDate(date);
+                    setValue(
+                      "date",
+                      date ? date.toISOString().split("T")[0] : "",
+                    );
+                  }}
+                  minDate={new Date()}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Sélectionnez une date"
+                  className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all"
+                  calendarClassName="bg-slate-800 border-slate-700 text-white"
+                  dayClassName={(date) =>
+                    date.getTime() >= new Date().setHours(0, 0, 0, 0)
+                      ? "text-white hover:bg-purple-600"
+                      : "text-slate-500"
+                  }
+                  wrapperClassName="w-full"
                 />
+                <input
+                  type="hidden"
+                  {...register("date", { required: "Date obligatoire" })}
+                />
+                {errors.date && (
+                  <p className="text-red-500 text-xs ml-2">
+                    {errors.date.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

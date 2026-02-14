@@ -15,10 +15,11 @@ const userSchema = new mongoose.Schema({
     trim: true
   },
   password: {
-    type: String,
-    required: [true, 'Le mot de passe est requis'],
-    minlength: 6
-  },
+  type: String,
+  required: [true, 'Le mot de passe est requis'],
+  minlength: 6,
+  select: false 
+},
   phone: {
     type: String,
     required: [true, 'Le téléphone est requis']

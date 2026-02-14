@@ -8,6 +8,34 @@ const GestionServices = () => {
   const [editingService, setEditingService] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Services de démonstration depuis ServicesPage
+  const demoServices = [
+    {
+      name: "Tôlerie",
+      description:
+        "Réparation complète de carrosserie, débosselage et peinture automobile professionnelle",
+      basePrice: 200,
+      estimatedTime: "2-3 jours",
+      category: "Tôlerie",
+    },
+    {
+      name: "Mécanique",
+      description:
+        "Entretien moteur, révision complète et diagnostic électronique de précision",
+      basePrice: 70,
+      estimatedTime: "1-2 jours",
+      category: "Mécanique",
+    },
+    {
+      name: "Électricité",
+      description:
+        "Système électrique, climatisation et diagnostic électronique automobile",
+      basePrice: 30,
+      estimatedTime: "30 min - 2h",
+      category: "Électrique",
+    },
+  ];
+
   // إعداد useForm
   const {
     register,
@@ -20,7 +48,7 @@ const GestionServices = () => {
       description: "",
       basePrice: "",
       estimatedTime: "",
-      category: "Entretien",
+      category: "Mécanique",
     },
   });
 
@@ -84,12 +112,25 @@ const GestionServices = () => {
     }
   };
 
+  const seedDemoServices = async () => {
+    if (window.confirm("Ajouter les services de démonstration ?")) {
+      try {
+        for (const service of demoServices) {
+          await api.post("/admin/services", service);
+        }
+        fetchServices();
+        alert("Services de démonstration ajoutés avec succès !");
+      } catch (error) {
+        alert("Erreur lors de l'ajout des services de démonstration");
+      }
+    }
+  };
+
   const getCategoryColor = (category) => {
     const colors = {
-      Entretien: "from-blue-600 to-cyan-500",
-      Réparation: "from-red-600 to-orange-500",
-      Diagnostic: "from-purple-600 to-pink-500",
-      Carrosserie: "from-green-600 to-emerald-500",
+      Mécanique: "from-blue-600 to-cyan-500",
+      Électrique: "from-purple-600 to-pink-500",
+      Tôlerie: "from-green-600 to-emerald-500",
     };
     return colors[category] || "from-slate-600 to-slate-500";
   };
@@ -108,12 +149,20 @@ const GestionServices = () => {
               {services.length} service(s) disponible(s)
             </p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl font-bold hover:scale-105 transition-all shadow-lg"
-          >
-            + Ajouter un service
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={seedDemoServices}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-bold hover:scale-105 transition-all shadow-lg"
+            >
+              📋 Ajouter Services Démo
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl font-bold hover:scale-105 transition-all shadow-lg"
+            >
+              + Ajouter un service
+            </button>
+          </div>
         </div>
 
         {/* Grid View */}
@@ -209,36 +258,56 @@ const GestionServices = () => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">
-                      Prix (TND)
+                      Prix (TND) *
                     </label>
                     <input
                       type="number"
-                      {...register("basePrice", { required: true })}
-                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl"
+                      {...register("basePrice", {
+                        required: "Prix obligatoire",
+                      })}
+                      className={`w-full px-4 py-3 bg-slate-900 border rounded-xl focus:outline-none ${errors.basePrice ? "border-red-500" : "border-slate-700 focus:border-blue-500"}`}
                     />
+                    {errors.basePrice && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.basePrice.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">
-                      Temps
+                      Temps *
                     </label>
                     <input
-                      {...register("estimatedTime", { required: true })}
-                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl"
+                      {...register("estimatedTime", {
+                        required: "Temps obligatoire",
+                      })}
+                      className={`w-full px-4 py-3 bg-slate-900 border rounded-xl focus:outline-none ${errors.estimatedTime ? "border-red-500" : "border-slate-700 focus:border-blue-500"}`}
                     />
+                    {errors.estimatedTime && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.estimatedTime.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">
-                      Catégorie
+                      Catégorie *
                     </label>
                     <select
-                      {...register("category")}
-                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl"
+                      {...register("category", {
+                        required: "Catégorie obligatoire",
+                      })}
+                      className={`w-full px-4 py-3 bg-slate-900 border rounded-xl focus:outline-none ${errors.category ? "border-red-500" : "border-slate-700 focus:border-blue-500"}`}
                     >
-                      <option value="Entretien">Entretien</option>
-                      <option value="Réparation">Réparation</option>
-                      <option value="Diagnostic">Diagnostic</option>
-                      <option value="Carrosserie">Carrosserie</option>
+                      <option value="Mécanique">Mécanique</option>
+                      <option value="Électrique">Électrique</option>
+                      <option value="Tôlerie">Tôlerie</option>
                     </select>
+                    {errors.category && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.category.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 

@@ -155,8 +155,8 @@ const ServicesPage = () => {
                       </span>
                     </div>
                     {isAuthenticated?
-                    <button 
-                      onClick={() => navigate('/newreservations')}
+                    <button
+                      onClick={() => navigate('/reservations/new')}
                       className={`group/btn w-full px-6 py-4 bg-gradient-to-r ${service.gradient} text-white rounded-xl font-bold transition-all duration-300 hover:shadow-2xl hover:scale-105 relative overflow-hidden`}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2">

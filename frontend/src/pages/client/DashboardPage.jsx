@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import api from "../../services/api/axios";
@@ -15,7 +16,13 @@ const DashboardPage = () => {
   const [reservations, setReservations] = useState([]);
   const [devis, setDevis] = useState([]);
   const [reparations, setReparations] = useState([]);
+  const [services, setServices] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingReservation, setEditingReservation] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   useEffect(() => {
     fetchData();
@@ -24,13 +31,19 @@ const DashboardPage = () => {
   const fetchData = async () => {
     try {
       // جلب البيانات بشكل متوازي لسرعة الأداء
-      const [vehiclesRes, reservationsRes, devisRes, reparationsRes] =
-        await Promise.all([
-          api.get("/vehicles"),
-          api.get("/reservations"),
-          api.get("/devis"),
-          api.get("/reparations"),
-        ]);
+      const [
+        vehiclesRes,
+        reservationsRes,
+        devisRes,
+        reparationsRes,
+        servicesRes,
+      ] = await Promise.all([
+        api.get("/vehicles"),
+        api.get("/reservations"),
+        api.get("/devis"),
+        api.get("/reparations"),
+        api.get("/services"),
+      ]);
 
       setStats({
         vehicles: vehiclesRes.data.length,
@@ -38,12 +51,20 @@ const DashboardPage = () => {
         devis: devisRes.data.filter((d) => d.status === "pending").length,
       });
 
-      setReservations(reservationsRes.data);
+      setReservations(
+        reservationsRes.data.filter(
+          (r) => r.status !== "delivered" && r.status !== "completed",
+        ),
+      );
       setDevis(devisRes.data.filter((d) => d.status === "pending"));
       // نعرض فقط الإصلاحات التي لم يتم تسليمها بعد (Active Tracking)
       setReparations(
         reparationsRes.data.filter((r) => r.status !== "delivered"),
       );
+      setServices(servicesRes.data);
+      setVehicles(vehiclesRes.data);
+      console.log("Vehicles loaded:", vehiclesRes.data); // Debug log
+      console.log("Services loaded:", servicesRes.data); // Debug log
     } catch (error) {
       console.error("Erreur chargement:", error);
     } finally {
@@ -77,6 +98,35 @@ const DashboardPage = () => {
         fetchData();
       } catch (error) {
         alert("Erreur lors της validation");
+      }
+    }
+  };
+
+  const handleEditReservation = (reservation) => {
+    setEditingReservation(reservation);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateReservation = async (data) => {
+    try {
+      await api.put(`/reservations/${editingReservation._id}`, data);
+      alert("Rendez-vous modifié avec succès !");
+      setShowEditModal(false);
+      setEditingReservation(null);
+      fetchData();
+    } catch (error) {
+      alert(error.response?.data?.message || "Erreur lors de la modification");
+    }
+  };
+
+  const handleDeleteReservation = async (id) => {
+    if (window.confirm("Êtes-vous sûr de vouloir annuler ce rendez-vous ?")) {
+      try {
+        await api.delete(`/reservations/${id}`);
+        alert("Rendez-vous annulé avec succès !");
+        fetchData();
+      } catch (error) {
+        alert(error.response?.data?.message || "Erreur lors de l'annulation");
       }
     }
   };
@@ -172,7 +222,20 @@ const DashboardPage = () => {
             </button>
           </div>
         </div>
-
+        <button
+          onClick={() => navigate("/chat-ai")}
+          className="w-full px-6 py-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-3xl transition-all shadow-xl flex items-center gap-4"
+        >
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl">
+            🤖
+          </div>
+          <div className="text-left flex-1">
+            <h3 className="text-2xl font-black text-white">Assistant IA</h3>
+            <p className="text-white/80 text-sm">
+              Diagnostics automobiles instantanés
+            </p>
+          </div>
+        </button>
         {/* STATS CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {[
@@ -328,6 +391,7 @@ const DashboardPage = () => {
                     <th className="p-6">Véhicule</th>
                     <th className="p-6">Date & Heure</th>
                     <th className="p-6 text-center">Status</th>
+                    <th className="p-6 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
@@ -357,6 +421,26 @@ const DashboardPage = () => {
                           className={`inline-block w-2 h-2 rounded-full ${getStatusStyle(rdv.status).text} bg-current`}
                         ></div>
                       </td>
+                      <td className="p-6 text-center">
+                        <div className="flex gap-2 justify-center">
+                          {rdv.status === "pending" && (
+                            <button
+                              onClick={() => handleEditReservation(rdv)}
+                              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg font-bold transition-all"
+                              title="Modifier le RDV"
+                            >
+                              ✏️
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteReservation(rdv._id)}
+                            className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs rounded-lg font-bold transition-all"
+                            title="Supprimer le RDV"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -364,6 +448,116 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
+
+        {/* EDIT MODAL */}
+        {showEditModal && editingReservation && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold text-white mb-4">
+                Modifier le RDV
+              </h3>
+
+              <form onSubmit={handleSubmit(handleUpdateReservation)}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Véhicule *
+                    </label>
+                    <select
+                      {...register("vehicleId")}
+                      className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"
+                      required
+                    >
+                      {vehicles.map((vehicle) => (
+                        <option key={vehicle._id} value={vehicle._id}>
+                          {vehicle.brand} {vehicle.model} - {vehicle.plate}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Service *
+                    </label>
+                    <select
+                      {...register("serviceId")}
+                      className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"
+                      required
+                    >
+                      {services.map((service) => (
+                        <option key={service._id} value={service._id}>
+                          {service.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      {...register("date")}
+                      min={new Date().toISOString().split("T")[0]} // Today or later
+                      max={
+                        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                          .toISOString()
+                          .split("T")[0]
+                      } // 1 year from now
+                      className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Heure *
+                    </label>
+                    <input
+                      type="time"
+                      {...register("time")}
+                      className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Notes
+                    </label>
+                    <textarea
+                      {...register("notes")}
+                      className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"
+                      rows="3"
+                      placeholder="Notes supplémentaires..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingReservation(null);
+                    }}
+                    className="px-6 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl transition-all"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -80,4 +80,25 @@ router.put('/:id/reject', protect, async (req, res) => {
   }
 });
 
+// @route   DELETE /api/devis/:id
+// @desc    Supprimer un devis
+// @access  Private
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const devis = await Devis.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+
+    if (!devis) {
+      return res.status(404).json({ message: 'Devis non trouvé' });
+    }
+
+    await Devis.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Devis supprimé avec succès' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

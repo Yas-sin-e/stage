@@ -21,7 +21,19 @@ router.get('/clients', protect, adminOnly, async (req, res) => {
     const clients = await User.find({ role: 'client' })
       .select('-password')
       .sort('-createdAt');
-    res.json(clients);
+
+    // Fetch vehicles for each client
+    const clientsWithVehicles = await Promise.all(
+      clients.map(async (client) => {
+        const vehicles = await Vehicle.find({ userId: client._id }).sort('-createdAt');
+        return {
+          ...client.toObject(),
+          vehicles: vehicles
+        };
+      })
+    );
+
+    res.json(clientsWithVehicles);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -81,6 +93,17 @@ router.get('/vehicles', protect, adminOnly, async (req, res) => {
   }
 });
 
+router.delete('/vehicles/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
+    if (!vehicle) return res.status(404).json({ message: 'Véhicule non trouvé' });
+
+    res.json({ message: 'Véhicule supprimé avec succès' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // ============================================
 // GESTION RÉSERVATIONS
 // ============================================
@@ -101,9 +124,17 @@ router.get('/reservations', protect, adminOnly, async (req, res) => {
 router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id)
-      .populate('serviceId'); 
+      .populate('serviceId');
 
     if (!reservation) return res.status(404).json({ message: 'Réservation non trouvée' });
+
+    if (!reservation.serviceId) {
+      return res.status(400).json({ message: 'Service non trouvé pour cette réservation' });
+    }
+
+    if (!reservation.date || isNaN(new Date(reservation.date).getTime())) {
+      return res.status(400).json({ message: 'Date de réservation invalide' });
+    }
 
     reservation.status = 'accepted';
     await reservation.save();
@@ -112,18 +143,20 @@ router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
     const defaultEndDate = new Date(reservation.date);
     defaultEndDate.setDate(defaultEndDate.getDate() + 2);
 
-    
+    console.log('Création du devis pour la réservation:', reservation._id);
+    console.log('Service:', reservation.serviceId);
+
     const newDevis = await Devis.create({
       userId: reservation.userId,
       vehicleId: reservation.vehicleId,
-      serviceId: reservation.serviceId._id, 
+      serviceId: reservation.serviceId._id,
       serviceLabel: reservation.serviceId.name,
       amount: reservation.serviceId.basePrice || 0,
       status: 'pending',
       description: reservation.notes || 'Devis généré suite à une réservation',
       dateDebut: reservation.date,
-       dateFin: req.body.dateFin || defaultEndDate,
-      estimatedTime: reservation.serviceId.estimatedTime || "48h", 
+    dateFin: req.body?.dateFin || defaultEndDate,
+      estimatedTime: reservation.serviceId.estimatedTime || "48h",
       items: [
         {
           name: reservation.serviceId.name,
@@ -133,9 +166,15 @@ router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
       ]
     });
 
-    res.json({ reservation, devis: newDevis });
+    console.log('Devis créé avec succès:', newDevis._id);
+
+    res.json({
+      reservation,
+      devis: newDevis,
+      message: 'Réservation acceptée et devis créé avec succès'
+    });
   } catch (error) {
-    // إذا حدث خطأ في الـ Validation سيظهر هنا
+    console.error('Erreur lors de l\'acceptation de la réservation:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -171,16 +210,66 @@ router.get('/devis', protect, adminOnly, async (req, res) => {
 
 router.post('/devis', protect, adminOnly, async (req, res) => {
   try {
+    const { dateDebut, dateFin } = req.body;
+
+    // Validation des dates
+    if (dateDebut && dateFin) {
+      const startDate = new Date(dateDebut);
+      const endDate = new Date(dateFin);
+
+      if (startDate > endDate) {
+        return res.status(400).json({
+          message: 'La date de début ne peut pas être supérieure à la date de fin'
+        });
+      }
+    }
+
     const devis = await Devis.create(req.body);
-    
+
     // في Mongoose 6، هذا السطر صحيح تماماً
     const populated = await devis.populate([
       { path: 'userId', select: 'name email phone' },
       { path: 'vehicleId', select: 'brand model plate' },
-      { path: 'serviceId', select: 'name category icon' } 
+      { path: 'serviceId', select: 'name category icon' }
     ]);
-    
+
     res.status(201).json(populated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.put('/devis/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { dateDebut, dateFin } = req.body;
+
+    // Validation des dates
+    if (dateDebut && dateFin) {
+      const startDate = new Date(dateDebut);
+      const endDate = new Date(dateFin);
+
+      if (startDate > endDate) {
+        return res.status(400).json({
+          message: 'La date de début ne peut pas être supérieure à la date de fin'
+        });
+      }
+    }
+
+    const devis = await Devis.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    ).populate([
+      { path: 'userId', select: 'name email phone' },
+      { path: 'vehicleId', select: 'brand model plate' },
+      { path: 'serviceId', select: 'name category icon' }
+    ]);
+
+    if (!devis) {
+      return res.status(404).json({ message: 'Devis non trouvé' });
+    }
+
+    res.json(devis);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -190,8 +279,16 @@ router.put('/devis/:id/accept', protect, adminOnly, async (req, res) => {
     const devis = await Devis.findById(req.params.id);
     if (!devis) return res.status(404).json({ message: "Devis non trouvé" });
     if (devis.status === 'accepted') {
-  return res.status(400).json({ message: "Ce devis est déjà accepté et une réparation existe déjà." });
-}
+      return res.status(400).json({ message: "Ce devis est déjà accepté et une réparation existe déjà." });
+    }
+
+    // Ensure dateFin exists
+    if (!devis.dateFin) {
+      const defaultEndDate = new Date(devis.dateDebut);
+      defaultEndDate.setDate(defaultEndDate.getDate() + 2);
+      devis.dateFin = defaultEndDate;
+    }
+
     devis.status = 'accepted';
     await devis.save();
     const reparation = await Reparation.create({
@@ -207,6 +304,7 @@ router.put('/devis/:id/accept', protect, adminOnly, async (req, res) => {
     });
     res.json(devis);
   } catch (error) {
+    console.error('Erreur lors de l\'acceptation du devis:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -220,6 +318,17 @@ router.put('/devis/:id/reject', protect, adminOnly, async (req, res) => {
     devis.status = 'rejected';
     await devis.save();
     res.json(devis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.delete('/devis/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const devis = await Devis.findByIdAndDelete(req.params.id);
+    if (!devis) return res.status(404).json({ message: 'Devis non trouvé' });
+
+    res.json({ message: 'Devis supprimé avec succès' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -7,6 +7,7 @@ const ProfilePage = () => {
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // تحديد الـ Theme بناءً على الرول
   const isAdmin = user?.role === "admin";
@@ -17,6 +18,8 @@ const ProfilePage = () => {
     handleSubmit,
     setValue,
     formState: { errors },
+    setError,
+    clearErrors,
   } = useForm();
   const {
     register: regPass,
@@ -49,7 +52,7 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-black py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header الديناميكي */}
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -92,46 +95,143 @@ const ProfilePage = () => {
           {/* Formulaire */}
           <div className="md:col-span-2 space-y-6">
             <div className="bg-slate-900/30 border border-slate-800 rounded-3xl p-8">
-              <form
-                onSubmit={handleSubmit(onUpdateProfile)}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">
-                      Nom complet
-                    </label>
-                    <input
-                      {...register("name", { required: true })}
-                      className="w-full bg-black/40 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-blue-500 transition-all"
-                    />
+              {!isEditing ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase font-bold text-slate-400 ml-1 tracking-wider">
+                        Nom complet
+                      </label>
+                      <div className="w-full bg-slate-800/60 border border-slate-600 rounded-xl p-4 text-white">
+                        {user?.name}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase font-bold text-slate-400 ml-1 tracking-wider">
+                        Téléphone
+                      </label>
+                      <div className="w-full bg-slate-800/60 border border-slate-600 rounded-xl p-4 text-white">
+                        {user?.phone}
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">
-                      Téléphone
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase font-bold text-slate-400 ml-1 tracking-wider">
+                      Email
                     </label>
-                    <input
-                      {...register("phone", { required: true })}
-                      className="w-full bg-black/40 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-blue-500 transition-all"
-                    />
+                    <div className="w-full bg-slate-800/60 border border-slate-600 rounded-xl p-4 text-white">
+                      {user?.email}
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className={`w-full py-4 bg-${themeColor}-600 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all`}
+                  >
+                    ✎ Modifier le profil
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">
-                    Email
-                  </label>
-                  <input
-                    {...register("email", { required: true })}
-                    className="w-full bg-black/40 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-blue-500 transition-all"
-                  />
-                </div>
-                <button
-                  disabled={loading}
-                  className={`w-full py-4 bg-${themeColor}-600 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all`}
+              ) : (
+                <form
+                  onSubmit={handleSubmit(onUpdateProfile)}
+                  className="space-y-4"
                 >
-                  {loading ? "Sauvegarde..." : "Mettre à jour le profil"}
-                </button>
-              </form>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase font-bold text-slate-400 ml-1 tracking-wider">
+                        Nom complet
+                      </label>
+                      <input
+                        {...register("name", { required: true })}
+                        className="w-full bg-slate-800/60 border border-slate-600 rounded-xl p-4 text-white placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200 text-base"
+                        placeholder="Votre nom complet"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase font-bold text-slate-400 ml-1 tracking-wider">
+                        Téléphone
+                      </label>
+                      <input
+                        {...register("phone", {
+                          required: "Téléphone obligatoire",
+                          pattern: {
+                            value: /^\d{8}$/,
+                            message:
+                              "Le numéro doit contenir exactement 8 chiffres",
+                          },
+                        })}
+                        className={`w-full bg-slate-800/60 border rounded-xl p-4 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-400/20 transition-all duration-200 text-base ${errors.phone ? "border-red-500" : "border-slate-600 focus:border-blue-400"}`}
+                        placeholder="Votre numéro de téléphone"
+                      />
+                      {errors.phone && (
+                        <p className="text-red-400 text-xs mt-1">
+                          {errors.phone.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase font-bold text-slate-400 ml-1 tracking-wider">
+                      Email
+                    </label>
+                    <input
+                      {...register("email", {
+                        required: "Email requis",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Email invalide",
+                        },
+                        validate: async (value) => {
+                          if (value === user?.email) return true; // Same email, no check needed
+                          try {
+                            const response = await api.post(
+                              "/auth/check-email",
+                              {
+                                email: value,
+                              },
+                            );
+                            return (
+                              response.data.available ||
+                              "Cet email est déjà utilisé"
+                            );
+                          } catch (error) {
+                            return "Erreur de vérification email";
+                          }
+                        },
+                      })}
+                      className={`w-full bg-slate-800/60 border rounded-xl p-4 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-400/20 transition-all duration-200 text-base ${errors.email ? "border-red-500" : "border-slate-600 focus:border-blue-400"}`}
+                      placeholder="votre.email@example.com"
+                    />
+                    {errors.email && (
+                      <p className="text-red-400 text-xs mt-1">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-4 pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={`flex-1 py-4 bg-${themeColor}-600 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all`}
+                    >
+                      {loading ? "Sauvegarde..." : "Enregistrer"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditing(false);
+                        if (user) {
+                          setValue("name", user.name);
+                          setValue("email", user.email);
+                          setValue("phone", user.phone);
+                        }
+                      }}
+                      className="flex-1 py-4 bg-slate-700 text-white rounded-xl font-black hover:bg-slate-600 transition-all"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
 
               <button
                 onClick={() => setShowPasswordModal(true)}
@@ -164,27 +264,64 @@ const ProfilePage = () => {
               })}
               className="space-y-4"
             >
-              <input
-                type="password"
-                {...regPass("currentPassword", { required: true })}
-                placeholder="Mot de passe actuel"
-                className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white"
-              />
-              <input
-                type="password"
-                {...regPass("newPassword", { required: true, minLength: 6 })}
-                placeholder="Nouveau mot de passe"
-                className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white"
-              />
-              <input
-                type="password"
-                {...regPass("confirmPassword", {
-                  validate: (v) =>
-                    v === watch("newPassword") || "Non identique",
-                })}
-                placeholder="Confirmer le nouveau"
-                className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white"
-              />
+              <div className="space-y-1">
+                <input
+                  type="password"
+                  {...regPass("currentPassword", {
+                    required: "Mot de passe actuel requis",
+                  })}
+                  placeholder="Mot de passe actuel"
+                  className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white focus:border-blue-500 transition-all"
+                />
+                {errors.currentPassword && (
+                  <p className="text-red-400 text-xs">
+                    {errors.currentPassword.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <input
+                  type="password"
+                  {...regPass("newPassword", {
+                    required: "Mot de passe requis",
+                    minLength: {
+                      value: 8,
+                      message: "Minimum 8 caractères",
+                    },
+                    pattern: {
+                      value:
+                        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+                      message:
+                        "Doit contenir majuscule, minuscule, chiffre et caractère spécial",
+                    },
+                  })}
+                  placeholder="Nouveau mot de passe"
+                  className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white focus:border-blue-500 transition-all"
+                />
+                {errors.newPassword && (
+                  <p className="text-red-400 text-xs">
+                    {errors.newPassword.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <input
+                  type="password"
+                  {...regPass("confirmPassword", {
+                    required: "Confirmation requise",
+                    validate: (v) =>
+                      v === watch("newPassword") ||
+                      "Les mots de passe ne correspondent pas",
+                  })}
+                  placeholder="Confirmer le nouveau"
+                  className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white focus:border-blue-500 transition-all"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-400 text-xs">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
               <div className="flex gap-2 pt-4">
                 <button
                   type="submit"

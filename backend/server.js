@@ -22,6 +22,8 @@ app.use('/api/devis', require('./routes/devis'));
 app.use('/api/reparations', require('./routes/reparations'));
 app.use('/api/admin', require('./routes/admin'));
 
+app.use('/api/chat',require('./routes/chatAI'));
+
 // Route de test
 app.get('/', (req, res) => {
   

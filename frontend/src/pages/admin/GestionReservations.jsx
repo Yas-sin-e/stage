@@ -26,8 +26,24 @@ const GestionReservations = () => {
     try {
       await api.put(`/admin/reservations/${id}/accept`);
       fetchReservations();
+      Swal.fire({
+        title: "Succès",
+        text: "Réservation acceptée et devis créé",
+        icon: "success",
+        background: "#0f172a",
+        color: "#ffffff",
+        confirmButtonColor: "#10b981"
+      });
     } catch (error) {
-      alert("Erreur");
+      const errorMessage = error.response?.data?.message || "Erreur lors de l'acceptation";
+      Swal.fire({
+        title: "Erreur",
+        text: errorMessage,
+        icon: "error",
+        background: "#0f172a",
+        color: "#ffffff",
+        confirmButtonColor: "#dc2626"
+      });
     }
   };
 

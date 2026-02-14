@@ -55,7 +55,7 @@ router.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
 
     // Vérifier l'utilisateur
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res
         .status(401)
@@ -87,7 +87,6 @@ router.post("/login", async (req, res, next) => {
 });
   } catch (error) {
     res.status(500).json({ message: error.message });
-    next(error);
   }
 });
 
@@ -132,6 +131,25 @@ router.put("/profile", protect, async (req, res) => {
       phone: req.user.phone,
       role: req.user.role,
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   POST /api/auth/check-email
+// @desc    Vérifier la disponibilité de l'email
+// @access  Private
+router.post("/check-email", protect, async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Vérifier si l'email est déjà utilisé par un autre utilisateur
+    const emailExists = await User.findOne({
+      email,
+      _id: { $ne: req.user._id },
+    });
+
+    res.json({ available: !emailExists });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

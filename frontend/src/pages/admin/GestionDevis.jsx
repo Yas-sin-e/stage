@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
+import toast from "react-hot-toast";
 import api from "../../services/api/axios";
 
 const GestionDevis = () => {
@@ -8,6 +9,7 @@ const GestionDevis = () => {
   const [vehicles, setVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editingDevis, setEditingDevis] = useState(null);
 
   // 1. إعداد React Hook Form
   const { register, control, handleSubmit, watch, setValue, reset } = useForm({
@@ -30,9 +32,16 @@ const GestionDevis = () => {
   const watchUserId = watch("userId");
 
   // 2. حساب المجموع التلقائي
+  const parsePrice = (price) => {
+    if (typeof price === "string" && price.includes(",")) {
+      return parseFloat(price.replace(",", ".")) || 0;
+    }
+    return Number(price || 0);
+  };
+
   useEffect(() => {
     const total = watchItems.reduce((sum, item) => {
-      return sum + Number(item.price || 0) * Number(item.quantity || 1);
+      return sum + parsePrice(item.price) * Number(item.quantity || 1);
     }, 0);
     setValue("amount", total);
   }, [watchItems, setValue]);
@@ -61,32 +70,85 @@ const GestionDevis = () => {
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       const endpoint = newStatus === "accepted" ? "accept" : "reject";
-
       await api.put(`/admin/devis/${id}/${endpoint}`);
-
-      alert(
+      toast.success(
         `Le devis a été ${newStatus === "accepted" ? "accepté" : "refusé"}`,
       );
       fetchData();
     } catch (error) {
-      alert("Erreur lors de la mise à jour");
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce devis ?")) {
+      try {
+        await api.delete(`/admin/devis/${id}`);
+        toast.success("Devis supprimé avec succès");
+        fetchData();
+      } catch (error) {
+        toast.error("Erreur lors de la suppression");
+      }
     }
   };
 
   const onSubmit = async (data) => {
     try {
-      await api.post("/admin/devis", data);
-      alert("Devis créé avec succès !");
-      fetchData();
+      if (editingDevis) {
+        const response = await api.put(
+          `/admin/devis/${editingDevis._id}`,
+          data,
+        );
+        await fetchData();
+
+        toast.success("Devis modifié avec succès !");
+      } else {
+        const response = await api.post("/admin/devis", data);
+        // Add new devis to local state immediately
+        setDevis((prev) => [...prev, response.data]);
+        toast.success("Devis créé avec succès !");
+      }
       handleCloseModal();
     } catch (error) {
-      alert(error.response?.data?.message || "Erreur lors de la création");
+      toast.error(
+        error.response?.data?.message || "Erreur lors de la sauvegarde",
+      );
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
+    setEditingDevis(null);
     reset();
+  };
+
+  const handleEdit = (devis) => {
+    setEditingDevis(devis);
+    setValue("userId", devis.userId?._id || "");
+    setValue("vehicleId", devis.vehicleId?._id || "");
+    setValue("serviceLabel", devis.serviceLabel || "");
+    setValue("estimatedTime", devis.estimatedTime || "");
+    setValue(
+      "dateDebut",
+      devis.dateDebut
+        ? new Date(devis.dateDebut).toISOString().split("T")[0]
+        : "",
+    );
+    setValue(
+      "dateFin",
+      devis.dateFin ? new Date(devis.dateFin).toISOString().split("T")[0] : "",
+    );
+    setValue("description", devis.description || "");
+    setValue("items", devis.items || [{ name: "", quantity: 1, price: 0 }]);
+    // Calculate total immediately when editing
+    const total = (devis.items || [{ name: "", quantity: 1, price: 0 }]).reduce(
+      (sum, item) => {
+        return sum + Number(item.price || 0) * Number(item.quantity || 1);
+      },
+      0,
+    );
+    setValue("amount", total);
+    setShowModal(true);
   };
 
   // 4. دالة الألوان والحالات
@@ -170,30 +232,50 @@ const GestionDevis = () => {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      {d.status === "accepted" && (
-                        <span className="text-green-500 font-bold flex items-center justify-center gap-1">
-                          <span className="text-lg">✓</span> Confirmé par client
-                        </span>
-                      )}
+                      <div className="flex justify-center gap-2">
+                        {d.status !== "accepted" && (
+                          <button
+                            onClick={() => handleEdit(d)}
+                            className="text-[10px] bg-blue-600/20 px-2 py-1 rounded border border-blue-500/50 text-blue-500 hover:bg-blue-600 hover:text-white"
+                            title="Ouvrir le formulaire d'édition"
+                          >
+                            ✏️ Éditer
+                          </button>
+                        )}
 
-                      {d.status === "rejected" && (
-                        <span className="text-red-500 font-bold flex items-center justify-center gap-1">
-                          <span className="text-lg">✕</span> Refusé par client
-                        </span>
-                      )}
+                        {d.status === "accepted" && (
+                          <span className="text-green-500 font-bold flex items-center gap-1">
+                            <span className="text-lg">✓</span> Confirmé
+                          </span>
+                        )}
 
-                      {d.status === "pending" && (
-                        <div className="flex justify-center gap-2">
+                        {d.status === "rejected" && (
+                          <span className="text-red-500 font-bold flex items-center gap-1">
+                            <span className="text-lg">✕</span> Refusé
+                          </span>
+                        )}
+
+                        {d.status === "pending" && (
                           <button
                             onClick={() =>
                               handleUpdateStatus(d._id, "accepted")
                             }
                             className="text-[10px] bg-green-600/20 px-2 py-1 rounded border border-green-500/50 text-green-500 hover:bg-green-600 hover:text-white"
                           >
-                            Accepter manuellement
+                            Accepter
                           </button>
-                        </div>
-                      )}
+                        )}
+
+                        {d.status !== "accepted" && (
+                          <button
+                            onClick={() => handleDelete(d._id)}
+                            className="text-[10px] bg-red-600/20 px-2 py-1 rounded border border-red-500/50 text-red-500 hover:bg-red-600 hover:text-white"
+                            title="Supprimer le devis"
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -247,6 +329,64 @@ const GestionDevis = () => {
                   </div>
                 </div>
 
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase">
+                      Service Label *
+                    </label>
+                    <input
+                      {...register("serviceLabel", { required: true })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3"
+                      placeholder="Ex: Réparation moteur"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase">
+                      Temps Estimé *
+                    </label>
+                    <input
+                      {...register("estimatedTime", { required: true })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3"
+                      placeholder="Ex: 48h"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase">
+                      Date Début *
+                    </label>
+                    <input
+                      type="date"
+                      {...register("dateDebut", { required: true })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase">
+                      Date Fin *
+                    </label>
+                    <input
+                      type="date"
+                      {...register("dateFin", { required: true })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase">
+                    Description
+                  </label>
+                  <textarea
+                    {...register("description")}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3"
+                    rows="3"
+                    placeholder="Description du devis..."
+                  />
+                </div>
+
                 {/* تفاصيل القطع */}
                 <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-700 space-y-4">
                   <h3 className="text-sm font-black text-amber-500 uppercase">
@@ -267,6 +407,7 @@ const GestionDevis = () => {
                       />
                       <input
                         type="number"
+                        step="0.01"
                         {...register(`items.${index}.price`)}
                         className="col-span-3 bg-slate-800 p-2 rounded-lg"
                         placeholder="Prix"
@@ -294,7 +435,11 @@ const GestionDevis = () => {
                     Total Global
                   </span>
                   <span className="text-2xl font-black">
-                    {watch("amount")} TND
+                    {Number(watch("amount")).toLocaleString("fr-FR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    TND
                   </span>
                 </div>
 
@@ -303,7 +448,7 @@ const GestionDevis = () => {
                     type="submit"
                     className="flex-1 bg-amber-600 py-4 rounded-xl font-bold hover:bg-amber-500"
                   >
-                    Enregistrer
+                    {editingDevis ? "Sauvegarder" : "Enregistrer"}
                   </button>
                   <button
                     type="button"

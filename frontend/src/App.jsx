@@ -1,38 +1,47 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/auth';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/auth";
+import { Toaster } from "react-hot-toast";
 
 // استيراد المكونات الأساسية
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-
+import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
+import ChatAIPage from "./pages/client/ChatAIPage";
 // استيراد الصفحات العامة
-import HomePage from './pages/AppPages/HomePage';
-import AboutPage from './pages/AppPages/AboutPage';
-import ServicesPage from './pages/AppPages/ServicesPage';
-import ContactPage from './pages/AppPages/ContactPage';
-import LoginPage from './pages/AppPages/LoginPage';
-import RegisterPage from './pages/AppPages/RegisterPage';
-import ProfilePage from './pages/AppPages/ProfilePage';
+import HomePage from "./pages/AppPages/HomePage";
+import AboutPage from "./pages/AppPages/AboutPage";
+import ServicesPage from "./pages/AppPages/ServicesPage";
+import ContactPage from "./pages/AppPages/ContactPage";
+import LoginPage from "./pages/AppPages/LoginPage";
+import RegisterPage from "./pages/AppPages/RegisterPage";
+import ProfilePage from "./pages/AppPages/ProfilePage";
 
 // صفحات العميل
-import DashboardPage from './pages/client/DashboardPage';
-import MyVehiclePage from './pages/client/MyVehiclePage';
-import ReservationsPage from './pages/client/ReservationsPage';
+import DashboardPage from "./pages/client/DashboardPage";
+import MyVehiclePage from "./pages/client/MyVehiclePage";
+import ReservationsPage from "./pages/client/ReservationsPage";
+import DevisPage from "./pages/client/DevisPage";
 
 // صفحات المسؤول
-import DashboardAdmin from './pages/admin/DashboardAdmin';
-import GestionClients from './pages/admin/GestionClients';
-import GestionReservations from './pages/admin/GestionReservations';
-import GestionDevis from './pages/admin/GestionDevis';
-import GestionReparations from './pages/admin/GestionReparations';
-import GestionServices from './pages/admin/GestionServices';
+import DashboardAdmin from "./pages/admin/DashboardAdmin";
+import GestionClients from "./pages/admin/GestionClients";
+import GestionReservations from "./pages/admin/GestionReservations";
+import GestionDevis from "./pages/admin/GestionDevis";
+import GestionReparations from "./pages/admin/GestionReparations";
+import GestionServices from "./pages/admin/GestionServices";
+import GestionVehicules from "./pages/admin/GestionVehicules";
 
 // مكون حماية المسارات
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Chargement...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        Chargement...
+      </div>
+    );
   if (!user) return <Navigate to="/login" replace />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  if (adminOnly && user.role !== "admin")
+    return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -40,7 +49,13 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
+  if (user)
+    return (
+      <Navigate
+        to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
+        replace
+      />
+    );
   return children;
 };
 
@@ -57,25 +72,141 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
-          
+          <Route path="/contact" element={<ContactPage />} />
+
           {/* مسارات تسجيل الدخول */}
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            }
+          />
 
           {/* مسارات العميل */}
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/my-vehicles" element={<ProtectedRoute><MyVehiclePage /></ProtectedRoute>} />
-          <Route path="/reservations/new" element={<ProtectedRoute><ReservationsPage /></ProtectedRoute>} />
-          <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat-ai"
+            element={
+              <ProtectedRoute>
+                <ChatAIPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-vehicles"
+            element={
+              <ProtectedRoute>
+                <MyVehiclePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations/new"
+            element={
+              <ProtectedRoute>
+                <ReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/devis"
+            element={
+              <ProtectedRoute>
+                <DevisPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* مسارات المسؤول (Admin) */}
-          <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><DashboardAdmin /></ProtectedRoute>} />
-          <Route path="/admin/clients" element={<ProtectedRoute adminOnly><GestionClients /></ProtectedRoute>} />
-          <Route path="/admin/reservations" element={<ProtectedRoute adminOnly><GestionReservations /></ProtectedRoute>} />
-          <Route path="/admin/devis" element={<ProtectedRoute adminOnly><GestionDevis /></ProtectedRoute>} />
-          <Route path="/admin/reparations" element={<ProtectedRoute adminOnly><GestionReparations /></ProtectedRoute>} />
-          <Route path="/admin/services" element={<ProtectedRoute adminOnly><GestionServices /></ProtectedRoute>} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute adminOnly>
+                <DashboardAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/clients"
+            element={
+              <ProtectedRoute adminOnly>
+                <GestionClients />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reservations"
+            element={
+              <ProtectedRoute adminOnly>
+                <GestionReservations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/devis"
+            element={
+              <ProtectedRoute adminOnly>
+                <GestionDevis />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reparations"
+            element={
+              <ProtectedRoute adminOnly>
+                <GestionReparations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/services"
+            element={
+              <ProtectedRoute adminOnly>
+                <GestionServices />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vehicles"
+            element={
+              <ProtectedRoute adminOnly>
+                <GestionVehicules />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -5,9 +5,25 @@ const GestionClients = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // الحالة الخاصة بالنافذة المنبثقة والعميل المختار
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [showVehiclesModal, setShowVehiclesModal] = useState(false);
+
   useEffect(() => {
     fetchClients();
   }, []);
+
+  const fetchClients = async () => {
+    try {
+      const { data } = await api.get("/admin/clients");
+      setClients(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleStatus = async (client) => {
     try {
       await api.put(`/admin/clients/${client._id}`, {
@@ -20,16 +36,6 @@ const GestionClients = () => {
       );
     } catch (error) {
       alert("Erreur lors de la mise à jour");
-    }
-  };
-  const fetchClients = async () => {
-    try {
-      const { data } = await api.get("/admin/clients");
-      setClients(data);
-    } catch (error) {
-      console.error("Erreur:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -46,6 +52,12 @@ const GestionClients = () => {
         alert("Erreur lors de la suppression");
       }
     }
+  };
+
+  // دالة لفتح نافذة السيارات
+  const handleOpenVehicles = (client) => {
+    setSelectedClient(client);
+    setShowVehiclesModal(true);
   };
 
   if (loading) {
@@ -103,6 +115,9 @@ const GestionClients = () => {
                       <span className="font-bold text-white">
                         {client.name}
                       </span>
+                      <div className="text-xs text-slate-400 mt-1">
+                        Véhicules: {client.vehicles?.length || 0}
+                      </div>
                     </td>
                     <td className="py-4 px-6 text-slate-300">{client.email}</td>
                     <td className="py-4 px-6 text-slate-300">{client.phone}</td>
@@ -121,9 +136,11 @@ const GestionClients = () => {
                       </span>
                     </td>
 
-                    <td className="py-4 px-6 text-right">
+                    <td
+                      className="py-4 px-6 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex justify-end gap-2">
-                        {/* زر التفعيل/الحظر */}
                         <button
                           onClick={() => toggleStatus(client)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
@@ -135,7 +152,6 @@ const GestionClients = () => {
                           {client.isActive ? "Bannir" : "Activer"}
                         </button>
 
-                        {/* زر الحذف */}
                         <button
                           onClick={() => handleDelete(client._id)}
                           className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-400 rounded-lg text-xs font-semibold transition-all"
@@ -150,6 +166,83 @@ const GestionClients = () => {
             </table>
           </div>
         </div>
+
+        {/* Modal لبيانات السيارات - يستخدم نفس ستايل Modal الخدمات الخاص بك */}
+        {showVehiclesModal && selectedClient && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+              <div className="p-6 border-b border-slate-700 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-white">
+                  Véhicules de {selectedClient.name}
+                </h2>
+                <button
+                  onClick={() => setShowVehiclesModal(false)}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6">
+                {selectedClient.vehicles &&
+                selectedClient.vehicles.length > 0 ? (
+                  <div className="overflow-hidden rounded-xl border border-slate-700">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-900/50">
+                        <tr>
+                          <th className="p-4 text-xs font-bold text-slate-400 uppercase">
+                            Marque / Modèle
+                          </th>
+                          <th className="p-4 text-xs font-bold text-slate-400 uppercase">
+                            Matricule
+                          </th>
+                          <th className="p-4 text-xs font-bold text-slate-400 uppercase text-center">
+                            Année
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-700">
+                        {selectedClient.vehicles.map((v, index) => (
+                          <tr
+                            key={index}
+                            className="bg-slate-800/30 hover:bg-slate-700/20"
+                          >
+                            <td className="p-4 font-bold text-white">
+                              {v.brand} {v.model}
+                            </td>
+                            <td className="p-4">
+                              <span className="bg-slate-900 px-2 py-1 rounded border border-slate-700 text-blue-400 font-mono text-sm">
+                                {v.licensePlate}
+                              </span>
+                            </td>
+                            <td className="p-4 text-center text-slate-400">
+                              {v.year || "N/A"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-slate-500 italic text-lg">
+                      Aucun véhicule enregistré pour ce client.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 border-t border-slate-700 flex justify-end">
+                <button
+                  onClick={() => setShowVehiclesModal(false)}
+                  className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition-all text-white"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
