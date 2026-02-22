@@ -132,12 +132,15 @@ const GestionVehicules = () => {
                   </td>
                   <td className="py-4 px-6">{vehicle.year}</td>
                   <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <div
-                        className="w-4 h-4 rounded-full border border-slate-600"
+                        className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg"
                         style={{ backgroundColor: vehicle.color }}
+                        title={vehicle.color}
                       ></div>
-                      <span>{vehicle.color}</span>
+                      <span className="font-medium text-white">
+                        {vehicle.color}
+                      </span>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-center">

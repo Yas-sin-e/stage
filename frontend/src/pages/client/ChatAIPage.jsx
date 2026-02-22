@@ -9,10 +9,19 @@ const ChatAIPage = () => {
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
 
+  // Clé localStorage basée sur l'ID utilisateur pour isoler les conversations
+  const getStorageKey = () => {
+    if (user && user._id) {
+      return `chatMessages_${user._id}`;
+    }
+    return "chatMessages";
+  };
+
   // Charger les messages depuis localStorage ou utiliser le message par défaut
   const loadMessagesFromStorage = () => {
     try {
-      const savedMessages = localStorage.getItem("chatMessages");
+      const storageKey = getStorageKey();
+      const savedMessages = localStorage.getItem(storageKey);
       if (savedMessages) {
         const parsedMessages = JSON.parse(savedMessages);
         // Convertir les timestamps string en objets Date
@@ -37,7 +46,8 @@ const ChatAIPage = () => {
   // Sauvegarder les messages dans localStorage
   const saveMessagesToStorage = (messagesToSave) => {
     try {
-      localStorage.setItem("chatMessages", JSON.stringify(messagesToSave));
+      const storageKey = getStorageKey();
+      localStorage.setItem(storageKey, JSON.stringify(messagesToSave));
     } catch (error) {
       console.error("Erreur lors de la sauvegarde des messages:", error);
     }

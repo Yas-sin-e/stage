@@ -8,12 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // ✅ هذا هو المفتاح
   const isAuthenticated = !!user;
 
-  // ===============================
-  // Vérifier si l'utilisateur est déjà connecté
-  // ===============================
   useEffect(() => {
     checkAuth();
   }, []);
@@ -28,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const { data } = await api.get("/auth/me");
-      setUser(data); // data = user
+      setUser(data);
     } catch (error) {
       logout();
     } finally {
@@ -36,14 +32,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ===============================
-  // Login
-  // ===============================
   const login = async (email, password) => {
     try {
       const data = await authService.login(email, password);
-      // data = { user, token }
-
       setUser(data.user);
 
       if (data.user.role === "admin") {
@@ -58,27 +49,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ===============================
-  // Register
-  // ===============================
   const register = async (userData) => {
     try {
-      const data = await authService.register(userData);
-      setUser(data.user);
+      await authService.register(userData);
       return { success: true };
     } catch (error) {
       return {
         success: false,
-        message:
-          error.response?.data?.message ||
-          "Erreur d'inscription",
+        message: error.response?.data?.message || "Erreur d'inscription",
       };
     }
   };
 
-  // ===============================
-  // Logout
-  // ===============================
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -91,7 +73,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         loading,
-        isAuthenticated,// ✅ condition ajoutée
+        isAuthenticated,
         login,
         register,
         logout,

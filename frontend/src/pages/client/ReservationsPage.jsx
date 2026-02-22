@@ -143,27 +143,34 @@ const ReservationsPage = () => {
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
                   Date du rendez-vous
                 </label>
-                <DatePicker
-                  selected={selectedDate}
-                  onChange={(date) => {
-                    setSelectedDate(date);
-                    setValue(
-                      "date",
-                      date ? date.toISOString().split("T")[0] : "",
-                    );
-                  }}
-                  minDate={new Date()}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Sélectionnez une date"
-                  className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all"
-                  calendarClassName="bg-slate-800 border-slate-700 text-white"
-                  dayClassName={(date) =>
-                    date.getTime() >= new Date().setHours(0, 0, 0, 0)
-                      ? "text-white hover:bg-purple-600"
-                      : "text-slate-500"
-                  }
-                  wrapperClassName="w-full"
-                />
+                <div className="relative">
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={(date) => {
+                      setSelectedDate(date);
+                      setValue(
+                        "date",
+                        date ? date.toISOString().split("T")[0] : "",
+                      );
+                    }}
+                    minDate={new Date()}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Sélectionnez une date"
+                    className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all placeholder-slate-400"
+                    calendarClassName="bg-slate-800 border-slate-700 text-white"
+                    dayClassName={(date) =>
+                      date.getTime() >= new Date().setHours(0, 0, 0, 0)
+                        ? "text-white hover:bg-purple-600"
+                        : "text-slate-500"
+                    }
+                    wrapperClassName="w-full"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
                 <input
                   type="hidden"
                   {...register("date", { required: "Date obligatoire" })}
@@ -179,11 +186,18 @@ const ReservationsPage = () => {
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
                   Heure
                 </label>
-                <input
-                  type="time"
-                  {...register("time", { required: "Heure obligatoire" })}
-                  className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type="time"
+                    {...register("time", { required: "Heure obligatoire" })}
+                    className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all placeholder-slate-400"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 

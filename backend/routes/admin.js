@@ -6,8 +6,7 @@ const Reservation = require('../models/Reservation');
 const Devis = require('../models/Devis');
 const Reparation = require('../models/Reparation');
 const Service = require('../models/Service');
-const { protect } = require('../middleware/authMiddleware');
-const { adminOnly } = require('../middleware/adminMiddleware');
+const { protect, adminOnly } = require('../middleware/adminMiddleware');
 
 // ✅ NE PAS utiliser router.use() ici
 // Appliquer les middlewares sur chaque route
