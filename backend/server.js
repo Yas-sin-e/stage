@@ -4,18 +4,23 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 
 // Connexion DB
+//ici le serveur se connecte à la base de données avant de démarrer, assurant que tout est prêt pour les requêtes entrantes.
 connectDB();
 
-const app = express();
+const app = express(); 
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middlewares:
+// Les middlewares sont des fonctions qui s’exécutent avant d’arriver aux routes, pour préparer ou vérifier les requêtes.
+app.use(cors());//permet aux requêtes provenant du frontend de passer sans être bloquées par les politiques de même origine du navigateur. C'est essentiel pour que le frontend puisse communiquer avec le backend, surtout si ils sont hébergés sur des domaines ou ports différents.
+app.use(express.json());// transforme les données JSON envoyées par le client en un objet JavaScript accessible via req.body dans les routes. C'est essentiel pour traiter les données d'authentification, de réservation, etc. envoyées depuis le frontend.
+app.use(express.urlencoded({ extended: true }));// Permet de traiter les données envoyées via des formulaires HTML (utile pour les routes d'admin qui pourraient utiliser des formulaires classiques).url
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/vehicles', require('./routes/vehicles'));
+///api/auth → URL que le frontend va appeler (par exemple via Axios).
+//Axios est une bibliothèque JavaScript utilisée pour faire des requêtes HTTP depuis le frontend vers le backend. 
+//require('./routes/auth') → récupère le fichier auth.js qui contient toutes les fonctions pour l’authentification (login, register, etc.).
+app.use('/api/vehicles', require('./routes/vehicles'));//les sont organiser de manier modulaire : modulaire signifie que chaque fonctionnalité (authentification, gestion des véhicules, services, etc.) est séparée dans des fichiers différents. Cela rend le code plus propre, plus facile à maintenir et à faire évoluer.
 app.use('/api/services', require('./routes/services'));
 app.use('/api/reservations', require('./routes/reservations'));
 app.use('/api/devis', require('./routes/devis'));

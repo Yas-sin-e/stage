@@ -7,7 +7,7 @@ const { Error } = require("mongoose");
 
 // Générer JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });//ici le sign  est une methode de jsonweb pour cree un emprinte numerique (token) et je donne l id de l'utilsateur comme une payload :payload est une information que tu veux inclure dans le token, dans ce cas l'id de l'utilisateur. Le secret est une clé secrète utilisée pour signer le token, et expiresIn définit la durée de validité du token (ici 30 jours). Ce token sera ensuite envoyé au client après une connexion ou une inscription réussie, et le client devra l'inclure dans les en-têtes des requêtes futures pour accéder aux routes protégées du backend.exmple de token : id: "64b8f1c2e4b0a5d6f7g8h9i" (l'id de l'utilisateur) et le token lui même ressemblera à une chaîne de caractères alphanumérique générée par JWT, qui encapsule cette information de manière sécurisée.
 };
 
 // @route   POST /api/auth/register
@@ -15,16 +15,16 @@ const generateToken = (id) => {
 // @access  Public
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone } = req.body;//ici {name, email, password, phone} sont extraits de req.body, qui contient les données envoyées par le client lors de l'inscription. Ces champs sont nécessaires pour créer un nouvel utilisateur dans la base de données. Le backend s'assure que toutes les informations requises sont présentes avant de procéder à la création du compte. cette notation d'uilser {} est appelée "destructuring" en JavaScript, elle permet d'extraire facilement les propriétés d'un objet (ici req.body) et de les assigner à des variables individuelles (name, email, password, phone) pour une utilisation plus simple dans le code qui suit.
 
     // Vérifier si l'utilisateur existe
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email });//findone est une méthode de Mongoose qui recherche un document dans la collection des utilisateurs (User) qui correspond à la condition spécifiée (ici, un utilisateur avec l'email fourni). Si un utilisateur avec cet email existe déjà dans la base de données, userExists contiendra cet utilisateur, sinon il sera null. Cette vérification est essentielle pour éviter les doublons d'utilisateurs avec le même email, ce qui pourrait causer des problèmes de sécurité et de gestion des comptes.
     if (userExists) {
       return res.status(400).json({ message: "Cet email est déjà utilisé" });
     }
 
     // Créer utilisateur
-    const user = await User.create({
+    const user = await User.create({// le create relier au modèle User, qui est un schéma Mongoose pour la collection des utilisateurs dans MongoDB. Lorsque tu appelles User.create(), Mongoose va automatiquement appliquer les validations définies dans le schéma (comme les champs requis, les formats, etc.) et aussi exécuter les middlewares pré-save (comme le hashage du mot de passe) avant de sauvegarder le nouvel utilisateur dans la base de données. Donc, en utilisant User.create(), tu bénéficies de toutes les fonctionnalités et sécurités que tu as mises en place dans ton modèle User, ce qui rend le processus de création d'utilisateur plus sûr et plus fiable.
       name,
       email,
       password,
@@ -50,12 +50,12 @@ router.post("/register", async (req, res) => {
 // @route   POST /api/auth/login
 // @desc    Connexion
 // @access  Public
-router.post("/login", async (req, res, next) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Vérifier l'utilisateur
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password'); // Par défaut, le champ password est exclu (select: false) dans le modèle User pour des raisons de sécurité. En utilisant .select('+password'), tu demandes explicitement à Mongoose d'inclure le champ password dans le résultat de la requête. Cela te permet de comparer le mot de passe fourni par l'utilisateur lors de la connexion avec le mot de passe stocké dans la base de données, qui est nécessaire pour vérifier les informations d'identification de l'utilisateur.
     if (!user) {
       return res
         .status(401)
@@ -95,7 +95,10 @@ router.post("/login", async (req, res, next) => {
 // @access  Private
 router.get("/me", protect, async (req, res) => {
   res.json(req.user);
+
 });
+
+//ici la route /me est protégée par le middleware protect, ce qui signifie que l'utilisateur doit être authentifié (avoir un token JWT valide) pour accéder à cette route. Lorsque le middleware protect vérifie le token et trouve l'utilisateur correspondant, il attache les informations de cet utilisateur à req.user. Ainsi, lorsque tu accèdes à req.user dans la route /me, tu obtiens les détails de l'utilisateur actuellement connecté, que tu peux ensuite renvoyer au client. C'est une manière courante de fournir une route qui permet aux utilisateurs de voir leurs propres informations après s'être connectés avec succès.
 
 // ... (code existant)
 
@@ -108,9 +111,9 @@ router.put("/profile", protect, async (req, res) => {
 
     // Vérifier si l'email est déjà utilisé par un autre utilisateur
     if (email !== req.user.email) {
-      const emailExists = await User.findOne({
+      const emailExists = await User.findOne({//le findone est une methode de mongoose pour retouner un utilsatuer avec ses attribut
         email,
-        _id: { $ne: req.user._id },
+        _id: { $ne: req.user._id },// ici %ne est un operatuer de monogdb  qui va Cherche un document dont l’_id est différent de l’ID de l’utilisateur connecté 
       });
       if (emailExists) {
         return res.status(400).json({ message: "Cet email est déjà utilisé" });

@@ -47,7 +47,7 @@ autoexpert
    │  │  │  ├─ HeroSection.jsx
    │  │  │  └─ ServicesSection.jsx
    │  │  └─ layout
-   │  │     ├─ Footer.jsx
+   │  │     ├─ Footer.jsxa
    │  │     ├─ Navbar.jsx
    │  │     └─ ScrollToTop.jsx
    │  ├─ context

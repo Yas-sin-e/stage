@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Augmentation de la taille de police globale */
+html {
+  font-size: 18px; /* Augmenté de 16px à 18px */
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Titres plus grands */
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2.25rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1.125rem;
+}
+
+/* Paragraphes plus grands */
+p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+/* Liens */
+a {
+  font-size: 1.1rem;
+}
+
+/* Boutons */
+button, .btn {
+  font-size: 1rem;
+}
+
+/* Inputs */
+input, textarea, select {
+  font-size: 1rem;
+}
+
 /* Animations personnalisées */
 @keyframes fade-in {
   from {
@@ -40,6 +96,7 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #2563eb;
 }
+
 .btn {
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
