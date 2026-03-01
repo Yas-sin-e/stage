@@ -20,11 +20,11 @@ Ce rapport s'inscrit dans le cadre d'un stage de perfectionnement effectué au s
 
 Après cette introduction, la suite du rapport est organisée comme suit :
 
-Dans le **premier chapitre**, intitulé « Présentation de l'organisme d'accueil et étude préalable », nous commençons par présenter la société Maison du Web, son organisation interne et son infrastructure. Une étude de l'existant justifie ensuite la solution proposée avant d'exposer la méthodologie Agile adoptée.
+Dans le **premier chapitre**, intitulé « Présentation de l'organisme d'accueil et étude préalable », on présente la société Maison du Web et son infrastructure. Ensuite, on effectue une étude de l'existant pour dégager la problématique actuelle, justifier le développement de la plateforme AutoExpert, et on expose la méthodologie Agile Scrum qu'on a adoptée pour mener à bien ce projet.
 
-Dans le **deuxième chapitre**, intitulé « Spécification des besoins et modélisation de la solution », les besoins fonctionnels et non fonctionnels de la plateforme sont identifiés, suivis de la conception détaillée du système via UML.
+Dans le **deuxième chapitre**, intitulé « Spécification des besoins et modélisation de la solution », on identifie en détail les besoins fonctionnels et non fonctionnels de l'application. Ensuite, on conçoit l'architecture du système et on modélise les différents processus métiers et parcours utilisateurs à l'aide des diagrammes UML (Cas d'utilisation, Backlog).
 
-Enfin, dans le **troisième chapitre**, intitulé « Réalisation et tests », l'environnement logiciel et matériel utilisé est décrit, le déroulement des sprints de développement est expliqué, ainsi que les phases de tests et de validation de la plateforme AutoExpert.
+Enfin, dans le **troisième chapitre**, intitulé « Réalisation et tests », on détaille l'environnement technique (MongoDB, Express, React, Node.js) qu'on a mis en place. On décrit concrètement l'exécution technique des différents sprints de développement, et on valide le bon fonctionnement de l'application à travers une série de tests fonctionnels, de sécurité et de performance.
 
 ---
 
@@ -108,26 +108,29 @@ L'objet de ce stage consiste à concevoir et développer une plateforme web nomm
 Afin d'assurer une planification efficace des tâches, un planning prévisionnel a été élaboré en collaboration avec le responsable de l'entreprise.
 
 ```mermaid
+%%{init: {'theme': 'default', 'gantt': {'useWidth': 1000}}}%%
 gantt
-    title Planning Prévisionnel du Stage - AutoExpert
+    title Planning Prévisionnel du Stage (5 au 31 Janvier 2026)
     dateFormat YYYY-MM-DD
-    axisFormat Semaine %U
+    tickInterval 1 week
+    axisFormat Semaine %W
 
-    section Phase Préliminaire
-    Étude de l'organisme         :done, etude, 2026-02-01, 4d
-    Infrastructure informatique  :done, infra, 2026-02-01, 4d
+    section Semaine 1 : Préparation
+    Étude de l'organisme         :done, etude, 2026-01-05, 3d
+    Infrastructure & Besoins     :done, infra, 2026-01-08, 2d
+    Modélisation UML             :done, model, 2026-01-10, 2d
 
-    section Analyse
-    Recueil et analyse besoins   :done, besoins, 2026-02-05, 5d
-    Modélisation de la solution  :done, model, 2026-02-08, 5d
+    section Semaine 2 : Sprint 1
+    Authentification & Services  :active, sprint1, 2026-01-12, 7d
 
-    section Développement
-    Sprint 1 (Auth & Base)       :active, sprint1, 2026-02-12, 7d
-    Sprint 2 (Métier & RDV)      :sprint2, 2026-02-19, 7d
-    Sprint 3 (Devis, IA, Stats)  :sprint3, 2026-02-26, 7d
+    section Semaine 3 : Sprint 2
+    Véhicules, RDV & Devis       :sprint2, 2026-01-19, 7d
 
-    section Documentation
-    Rédaction du rapport         :crit, rapport, 2026-02-01, 28d
+    section Semaine 4 : Sprint 3
+    Réparations, Dashboard & IA  :sprint3, 2026-01-26, 6d
+
+    section Transversal
+    Rédaction du rapport         :crit, rapport, 2026-01-05, 27d
 ```
 
 _Figure 1.1 : Diagramme de Gantt représentant la planification des activités du stage_
@@ -245,7 +248,6 @@ Scrum structure le travail autour d'événements :
 
 Ce premier chapitre a permis de poser les fondements de la réalisation d'AutoExpert. La présentation de Maison du Web a mis en lumière un environnement technologique idéal. L'étude préalable (Drivvo, Shopmonkey) a révélé un manque crucial d'outils de diagnostic intelligent.
 C'est pour combler cette lacune que nous avons proposé AutoExpert, combinant gestion classique et IA embarquée. L'adoption de la méthodologie Agile Scrum garantit une gestion structurée et flexible, indispensable pour transformer ces besoins en fonctionnalités concrètes. Nous aborderons la spécification et la modélisation UML détaillée dans le chapitre suivant.
-
 
 # CHAPITRE 2 : Spécification des besoins et modélisation de la solution
 
@@ -547,7 +549,6 @@ _Figure 2.2 : Architecture MERN — flux de données entre les 3 couches_
 ## Conclusion du Chapitre 2
 
 Ce second chapitre a permis de formaliser les besoins et spécifications du projet AutoExpert. Le Product Backlog enrichi structure l'ensemble des 13 User Stories (incluant la réinitialisation de mot de passe par email - **US0**) avec leurs critères d'acceptation et estimations. La méthodologie Scrum, l'écosystème MERN et les outils choisis constituent une base solide pour aborder la phase de réalisation présentée dans le chapitre suivant.
-
 
 # CHAPITRE 3 : Réalisation et tests
 
@@ -1307,4 +1308,3 @@ L'environnement MERN s'est révélé être une architecture performante et homog
 | MDP         | Mot De Passe                        |
 | SMTP        | Simple Mail Transfer Protocol       |
 | UML         | Unified Modeling Language           |
-
