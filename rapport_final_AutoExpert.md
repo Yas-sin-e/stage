@@ -561,10 +561,12 @@ Ce chapitre décrit la mise en œuvre pratique d'AutoExpert, découpée en trois
 
 > 📋 **Fonctionnalités – Sprint 1**
 
-| ID     | Fonctionnalité             | Statut |
-| :----- | :------------------------- | :----- |
-| **F1** | Gestion d'accès et profil. | ✅     |
-| **F2** | Gestion des services.      | ✅     |
+| ID    | Fonctionnalité (User Story)      | Statut |
+| :---- | :------------------------------- | :----- |
+| **1** | Inscription et Connexion         | ✅     |
+| **2** | Réinitialisation du mot de passe | ✅     |
+| **3** | Gestion du profil utilisateur    | ✅     |
+| **4** | Gestion des services (Admin)     | ✅     |
 
 ### 1.1 Backlog du Sprint 1
 
@@ -745,11 +747,12 @@ _(Insérer captures : LoginPage · ForgotPasswordPage · ResetPasswordPage · Re
 
 > 📋 **Fonctionnalités – Sprint 2**
 
-| ID     | Fonctionnalité            | Statut |
-| :----- | :------------------------ | :----- |
-| **F3** | Gestion des véhicules.    | ✅     |
-| **F4** | Gestion des réservations. | ✅     |
-| **F5** | Gestion des devis.        | ✅     |
+| ID    | Fonctionnalité (User Story)         | Statut |
+| :---- | :---------------------------------- | :----- |
+| **5** | Gestion des véhicules clients       | ✅     |
+| **6** | Prise de rendez-vous (Client)       | ✅     |
+| **7** | Validation des réservations (Admin) | ✅     |
+| **8** | Création et envoi de devis          | ✅     |
 
 ### 2.1 Backlog du Sprint 2
 
@@ -906,11 +909,12 @@ _(Insérer captures : MyVehiclesPage · ServicesPage · ReservationsPage · Admi
 
 > 📋 **Fonctionnalités – Sprint 3**
 
-| ID     | Fonctionnalité         | Statut |
-| :----- | :--------------------- | :----- |
-| **F6** | Suivi des réparations. | ✅     |
-| **F7** | Tableau de bord.       | ✅     |
-| **F8** | Chat IA Automobile.    | ✅     |
+| ID     | Fonctionnalité (User Story)     | Statut |
+| :----- | :------------------------------ | :----- |
+| **9**  | Acceptation / Refus des devis   | ✅     |
+| **10** | Suivi des réparations (Admin)   | ✅     |
+| **11** | Tableau de bord et statistiques | ✅     |
+| **12** | Chat IA de diagnostic           | ✅     |
 
 ### 3.1 Backlog du Sprint 3
 
