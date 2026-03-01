@@ -307,10 +307,10 @@ const ServicesPage = () => {
               </button>
             )}
             <button
-              onClick={() => navigate("/contact")}
+              onClick={() => navigate("/services")}
               className="px-10 py-5 bg-white/5 border-2 border-white/20 hover:bg-white hover:text-slate-900 text-white rounded-xl text-lg font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm"
             >
-              Nous contacter
+              Voir les services
             </button>
           </div>
 

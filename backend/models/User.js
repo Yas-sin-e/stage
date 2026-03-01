@@ -32,7 +32,9 @@ const userSchema = new mongoose.Schema({
   isActive: {//pour faire bloquer (ban)periodique sans supprimer
     type: Boolean,
     default: true
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date
 }, {
   timestamps: true//pour Mongodb ajout automatiquement les createdAt,updatedAt
 });

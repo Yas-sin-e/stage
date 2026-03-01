@@ -17,7 +17,6 @@ const GestionServices = () => {
     defaultValues: {
       name: "",
       description: "",
-      basePrice: "",
       estimatedTime: "",
       category: "Mécanique",
     },

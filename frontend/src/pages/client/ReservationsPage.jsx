@@ -7,23 +7,24 @@ import api from "../../services/api/axios";
 
 const ReservationsPage = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // لاستقبال ID السيارة إذا تم توجيهه من صفحة السيارات
+  const location = useLocation();
 
   const [vehicles, setVehicles] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // إعداد useForm
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm({
     defaultValues: {
-      vehicleId: location.state?.vehicleId || "", // تعبئة السيارة تلقائياً إذا جاء من صفحة السيارات
+      vehicleId: location.state?.vehicleId || "",
       serviceId: "",
+      customProblem: "",
       date: "",
       time: "",
       notes: "",
@@ -41,7 +42,7 @@ const ReservationsPage = () => {
         api.get("/services"),
       ]);
       setVehicles(vehiclesRes.data);
-      setServices(servicesRes.data);
+      setServices(servicesRes.data.filter((s) => s.isActive));
     } catch (error) {
       console.error("Erreur:", error);
     } finally {
@@ -51,7 +52,16 @@ const ReservationsPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      await api.post("/reservations", data);
+      const reservationData = {
+        vehicleId: data.vehicleId,
+        serviceId: data.serviceId === "custom" ? null : data.serviceId || null,
+        customProblem: data.serviceId === "custom" ? data.customProblem : "",
+        date: data.date,
+        time: data.time,
+        notes: data.notes,
+      };
+
+      await api.post("/reservations", reservationData);
       alert("📅 Réservation créée avec succès !");
       navigate("/dashboard");
     } catch (error) {
@@ -69,7 +79,6 @@ const ReservationsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black py-12 px-6">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="mb-10 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic uppercase">
             Réserver un <span className="text-purple-500">Service</span>
@@ -80,7 +89,6 @@ const ReservationsPage = () => {
         </div>
 
         <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-          {/* Decorative element */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 blur-3xl rounded-full -mr-16 -mt-16"></div>
 
           <form
@@ -118,24 +126,40 @@ const ReservationsPage = () => {
                 Type de prestation
               </label>
               <select
-                {...register("serviceId", {
-                  required: "Quel service souhaitez-vous ?",
-                })}
+                {...register("serviceId")}
                 className={`w-full px-6 py-4 bg-black border ${errors.serviceId ? "border-red-500" : "border-slate-800"} rounded-2xl text-white focus:border-purple-500 outline-none transition-all appearance-none cursor-pointer`}
               >
                 <option value="">-- Choisissez un service --</option>
                 {services.map((s) => (
                   <option key={s._id} value={s._id}>
-                    🛠️ {s.name} - {s.basePrice} TND
+                    🛠️ {s.name}
                   </option>
                 ))}
+                <option value="custom">✏️ Autre problème (non listé)</option>
               </select>
-              {errors.serviceId && (
-                <p className="text-red-500 text-xs ml-2">
-                  {errors.serviceId.message}
-                </p>
-              )}
             </div>
+
+            {/* Champ pour problème personnalisé */}
+            {watch("serviceId") === "custom" && (
+              <div className="space-y-2 animate-fade-in">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">
+                  Décrivez votre problème
+                </label>
+                <textarea
+                  {...register("customProblem", {
+                    required: "Décrivez votre problème",
+                  })}
+                  rows="4"
+                  className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all resize-none"
+                  placeholder="Décrivez le problème de votre véhicule en détail..."
+                />
+                {errors.customProblem && (
+                  <p className="text-red-500 text-xs ml-2">
+                    {errors.customProblem.message}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Date et Heure */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -166,8 +190,18 @@ const ReservationsPage = () => {
                     wrapperClassName="w-full"
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -193,8 +227,18 @@ const ReservationsPage = () => {
                     className="w-full px-6 py-4 bg-black border border-slate-800 rounded-2xl text-white focus:border-purple-500 outline-none transition-all placeholder-slate-400"
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </div>
                 </div>

@@ -3,6 +3,7 @@ const router = express.Router();
 const Devis = require('../models/Devis');
 const Reparation = require('../models/Reparation');
 const { protect } = require('../middleware/authMiddleware');
+const { adminOnly } = require('../middleware/adminMiddleware');
 
 // @route   GET /api/devis
 // @desc    Obtenir mes devis
@@ -13,6 +14,39 @@ router.get('/', protect, async (req, res) => {
       .populate('vehicleId', 'brand model plate')
       .sort('-createdAt');
     res.json(devis);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   PUT /api/devis/:id
+// @desc    Modifier un devis (admin)
+// @access  Private/Admin
+router.put('/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { amount, estimatedTime, dateDebut, dateFin, description, items, serviceLabel } = req.body;
+    
+    const devis = await Devis.findById(req.params.id);
+    if (!devis) {
+      return res.status(404).json({ message: 'Devis non trouvé' });
+    }
+    
+    if (devis.status !== 'pending') {
+      return res.status(400).json({ message: 'Impossible de modifier un devis déjà accepté ou refusé' });
+    }
+    
+    if (amount !== undefined) devis.amount = amount;
+    if (estimatedTime) devis.estimatedTime = estimatedTime;
+    if (dateDebut) devis.dateDebut = dateDebut;
+    if (dateFin) devis.dateFin = dateFin;
+    if (description !== undefined) devis.description = description;
+    if (items) devis.items = items;
+    if (serviceLabel) devis.serviceLabel = serviceLabel;
+    
+    await devis.save();
+    
+    const populated = await devis.populate('vehicleId', 'brand model plate');
+    res.json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

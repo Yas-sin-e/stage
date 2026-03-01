@@ -63,4 +63,86 @@ router.post('/ai', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/chat/diagnose
+// @desc    Analyser un problème de véhicule avec l'IA
+// @access  Private
+router.post('/diagnose', protect, async (req, res) => {
+  try {
+    const { problem, vehicleId } = req.body;
+
+    if (!problem || !vehicleId) {
+      return res.status(400).json({
+        message: 'Le problème et l\'ID du véhicule sont requis'
+      });
+    }
+
+    // Récupérer les infos du véhicule
+    const Vehicle = require('../models/Vehicle');
+    const vehicle = await Vehicle.findById(vehicleId);
+
+    if (!vehicle) {
+      return res.status(404).json({ message: 'Véhicule non trouvé' });
+    }
+
+    // Créer le prompt pour le diagnostic
+    const prompt = `Tu es un expert en mécanique automobile. Un client décrit un problème avec son véhicule:
+- Marque: ${vehicle.brand}
+- Modèle: ${vehicle.model}
+- Année: ${vehicle.year || 'Non spécifiée'}
+- Kilométrage: ${vehicle.kilometrage || 'Non spécifié'} km
+- Problème décrit: ${problem}
+
+Analyse ce problème et fournis:
+1. Une description courte du problème probable
+2. Les services suggérés (nom du service, prix estimé en TND, durée estimée)
+3. Le niveau de gravité (low, medium, high)
+
+Réponds en JSON avec ce format exact:
+{
+  "description": "texte court",
+  "suggestedServices": [
+    {"serviceName": "nom", "estimatedPrice": nombre, "estimatedTime": "durée"}
+  ],
+  "severity": "low|medium|high"
+}`;
+
+    const response = await ollama.chat({
+      model: 'autoexpert',
+      messages: [{ role: 'user', content: prompt }],
+      stream: false
+    });
+
+    // Parser la réponse JSON
+    let diagnosis;
+    try {
+      const jsonMatch = response.message.content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        diagnosis = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Pas de JSON trouvé');
+      }
+    } catch (parseError) {
+      // Si le parsing échoue, créer une réponse par défaut
+      diagnosis = {
+        description: response.message.content.substring(0, 200),
+        suggestedServices: [
+          { serviceName: 'Diagnostic complet', estimatedPrice: 50, estimatedTime: '1h' }
+        ],
+        severity: 'medium'
+      };
+    }
+
+    // Ajouter la date d'analyse
+    diagnosis.analyzedAt = new Date();
+
+    res.json(diagnosis);
+
+  } catch (error) {
+    console.error('Erreur Ollama diagnose:', error);
+    res.status(500).json({
+      message: 'Erreur lors du diagnostic IA'
+    });
+  }
+});
+
 module.exports = router;

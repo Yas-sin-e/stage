@@ -123,53 +123,32 @@ router.get('/reservations', protect, adminOnly, async (req, res) => {
 router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id)
-      .populate('serviceId');
+      .populate('serviceId', 'name')
+      .populate('vehicleId');
 
     if (!reservation) return res.status(404).json({ message: 'Réservation non trouvée' });
-
-    if (!reservation.serviceId) {
-      return res.status(400).json({ message: 'Service non trouvé pour cette réservation' });
-    }
-
-    if (!reservation.date || isNaN(new Date(reservation.date).getTime())) {
-      return res.status(400).json({ message: 'Date de réservation invalide' });
-    }
 
     reservation.status = 'accepted';
     await reservation.save();
 
-    // حساب تاريخ نهاية افتراضي (مثلاً بعد يومين من البداية)
-    const defaultEndDate = new Date(reservation.date);
-    defaultEndDate.setDate(defaultEndDate.getDate() + 2);
-
-    console.log('Création du devis pour la réservation:', reservation._id);
-    console.log('Service:', reservation.serviceId);
-
-    const newDevis = await Devis.create({
+    // Créer le devis après acceptation de la réservation
+    const serviceLabel = reservation.customProblem || reservation.serviceId?.name || 'Service non spécifié';
+    const devis = await Devis.create({
       userId: reservation.userId,
       vehicleId: reservation.vehicleId,
-      serviceId: reservation.serviceId._id,
-      serviceLabel: reservation.serviceId.name,
-      amount: reservation.serviceId.basePrice || 0,
-      status: 'pending',
-      description: reservation.notes || 'Devis généré suite à une réservation',
+      serviceId: reservation.serviceId,
+      serviceLabel,
+      amount: 0,
+      estimatedTime: '0h',
       dateDebut: reservation.date,
-    dateFin: req.body?.dateFin || defaultEndDate,
-      estimatedTime: reservation.serviceId.estimatedTime || "48h",
-      items: [
-        {
-          name: reservation.serviceId.name,
-          quantity: 1,
-          price: reservation.serviceId.basePrice || 0
-        }
-      ]
+      dateFin: reservation.date,
+      status: 'pending',
+      description: reservation.aiDiagnosis?.description || reservation.customProblem || reservation.notes || ''
     });
-
-    console.log('Devis créé avec succès:', newDevis._id);
 
     res.json({
       reservation,
-      devis: newDevis,
+      devis,
       message: 'Réservation acceptée et devis créé avec succès'
     });
   } catch (error) {

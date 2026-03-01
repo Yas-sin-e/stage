@@ -10,17 +10,14 @@ const serviceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  basePrice: {
-    type: Number,
-    required: true
-  },
+  // Prix supprimé - le prix dépend du véhicule, sera calculé lors du devis/réservation
   estimatedTime: {
     type: String,
     required: true
   },
   category: {
     type: String,
-    enum: ['Entretien', 'Réparation', 'Diagnostic', 'Carrosserie'],
+    enum: ['Entretien', 'Réparation', 'Diagnostic', 'Carrosserie', 'Autre'],
     required: true
   },
   isActive: {

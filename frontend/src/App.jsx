@@ -5,20 +5,23 @@ import { Toaster } from "react-hot-toast";
 // استيراد المكونات الأساسية
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import ChatAssistantFloat from "./components/layout/ChatAssistantFloat";
 import ChatAIPage from "./pages/client/ChatAIPage";
 // استيراد الصفحات العامة
 import HomePage from "./pages/AppPages/HomePage";
 import AboutPage from "./pages/AppPages/AboutPage";
 import ServicesPage from "./pages/AppPages/ServicesPage";
-import ContactPage from "./pages/AppPages/ContactPage";
 import LoginPage from "./pages/AppPages/LoginPage";
 import RegisterPage from "./pages/AppPages/RegisterPage";
 import ProfilePage from "./pages/AppPages/ProfilePage";
+import ForgotPasswordPage from "./pages/AppPages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/AppPages/ResetPasswordPage";
 
 // صفحات العميل
 import DashboardPage from "./pages/client/DashboardPage";
 import MyVehiclePage from "./pages/client/MyVehiclePage";
 import ReservationsPage from "./pages/client/ReservationsPage";
+import MyReservationsPage from "./pages/client/MyReservationsPage";
 import DevisPage from "./pages/client/DevisPage";
 
 // صفحات المسؤول
@@ -65,6 +68,9 @@ function App() {
       {/* 1. الـ Navbar يظهر في كل الصفحات */}
       <Navbar />
 
+      {/* Chat Assistant Float Button */}
+      <ChatAssistantFloat />
+
       {/* 2. محتوى الصفحات المتغير */}
       <main className="flex-grow">
         <Routes>
@@ -72,7 +78,6 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
-          <Route path="/contact" element={<ContactPage />} />
 
           {/* مسارات تسجيل الدخول */}
           <Route
@@ -90,6 +95,11 @@ function App() {
                 <RegisterPage />
               </PublicRoute>
             }
+          />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordPage />}
           />
 
           {/* مسارات العميل */}
@@ -122,6 +132,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations"
+            element={
+              <ProtectedRoute>
+                <MyReservationsPage />
               </ProtectedRoute>
             }
           />

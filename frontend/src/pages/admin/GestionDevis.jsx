@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
 import api from "../../services/api/axios";
 
 const GestionDevis = () => {
+  const location = useLocation();
   const [devis, setDevis] = useState([]);
   const [clients, setClients] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingDevis, setEditingDevis] = useState(null);
+  const [reservationData, setReservationData] = useState(null);
 
   const { register, control, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -44,6 +47,11 @@ const GestionDevis = () => {
 
   useEffect(() => {
     fetchData();
+    
+    // Si on vient d'une réservation, charger ses données
+    if (location.state?.reservationId) {
+      loadReservationData(location.state.reservationId);
+    }
   }, []);
 
   const fetchData = async () => {
@@ -63,17 +71,46 @@ const GestionDevis = () => {
     }
   };
 
-  const handleUpdateStatus = async (id, newStatus) => {
+  const loadReservationData = async (reservationId) => {
     try {
-      const endpoint = newStatus === "accepted" ? "accept" : "reject";
-      await api.put(`/admin/devis/${id}/${endpoint}`);
-      toast.success(
-        `Le devis a été ${newStatus === "accepted" ? "accepté" : "refusé"}`,
-      );
-      fetchData();
+      const { data } = await api.get(`/admin/reservations`);
+      const reservation = data.find(r => r._id === reservationId);
+      
+      if (reservation) {
+        setReservationData(reservation);
+        
+        // Pré-remplir le formulaire
+        setValue("userId", reservation.userId._id);
+        setValue("vehicleId", reservation.vehicleId._id);
+        
+        if (reservation.serviceId) {
+          setValue("serviceLabel", reservation.serviceId.name);
+        } else if (reservation.customProblem) {
+          setValue("serviceLabel", reservation.customProblem.substring(0, 50));
+          setValue("description", `Problème décrit par le client: ${reservation.customProblem}`);
+        }
+        
+        // Dates par défaut
+        const today = new Date().toISOString().split('T')[0];
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 2);
+        
+        setValue("dateDebut", today);
+        setValue("dateFin", endDate.toISOString().split('T')[0]);
+        setValue("estimatedTime", "48h");
+        
+        // Ouvrir le modal
+        setShowModal(true);
+        toast.success("Données de la réservation chargées");
+      }
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+      console.error("Erreur:", error);
+      toast.error("Erreur lors du chargement de la réservation");
     }
+  };
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    // Cette fonction n'est plus utilisée - seul le client peut accepter/refuser
   };
 
   const handleDelete = async (id) => {
@@ -250,7 +287,7 @@ const GestionDevis = () => {
                       </td>
                       <td className="py-4 px-4 md:px-6 text-center">
                         <div className="flex justify-center gap-2 flex-wrap">
-                          {d.status !== "accepted" && (
+                          {d.status === "pending" && (
                             <button
                               onClick={() => handleEdit(d)}
                               className="text-sm bg-blue-600/20 px-3 py-1.5 rounded border border-blue-500/50 text-blue-500 hover:bg-blue-600 hover:text-white transition-all"
@@ -261,25 +298,14 @@ const GestionDevis = () => {
 
                           {d.status === "accepted" && (
                             <span className="text-green-500 font-bold flex items-center gap-1 text-sm">
-                              <span className="text-lg">✓</span> Confirmé
+                              <span className="text-lg">✓</span> Accepté par client
                             </span>
                           )}
 
                           {d.status === "rejected" && (
                             <span className="text-red-500 font-bold flex items-center gap-1 text-sm">
-                              <span className="text-lg">✕</span> Refusé
+                              <span className="text-lg">✕</span> Refusé par client
                             </span>
-                          )}
-
-                          {d.status === "pending" && (
-                            <button
-                              onClick={() =>
-                                handleUpdateStatus(d._id, "accepted")
-                              }
-                              className="text-sm bg-green-600/20 px-3 py-1.5 rounded border border-green-500/50 text-green-500 hover:bg-green-600 hover:text-white transition-all"
-                            >
-                              ✓ Accepter
-                            </button>
                           )}
 
                           {d.status !== "accepted" && (

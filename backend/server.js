@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const connectDB = require('./config/db');
 
 // Connexion DB
@@ -47,7 +48,24 @@ app.use((err, req, res, next) => {
     error: err.message // Ça t'aidera à débugger le vrai problème (DB, Token, etc.)
   });
 });
+// Fonction pour pré-chauffer le modèle Ollama
+const warmUpOllama = async () => {
+  try {
+    console.log("🤖 Initialisation du modèle Ollama en cours...");
+    // On envoie une requête vide juste pour charger le modèle en RAM
+    await axios.post('http://localhost:11434/api/generate', {
+      model: "autoexpert", // Le nom du modèle utilisé dans le projet
+      prompt: "Hello",
+      keep_alive: -1 // OPTION CRITIQUE : Garde le modèle en mémoire indéfiniment
+    });
+    console.log("✅ Modèle Ollama chargé et prêt (Latence réduite).");
+  } catch (error) {
+    console.error("⚠️ Ollama non disponible (mode chat AI désactivé):", error.message);
+  }
+};
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Serveur lancé sur le port ${PORT}`);
+  warmUpOllama(); // On lance le chargement dès que le serveur démarre
 });

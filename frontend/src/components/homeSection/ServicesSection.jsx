@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api/axios";
 
 // Icônes pour les catégories
@@ -47,19 +47,41 @@ const ServicesSection = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6">
-        {/* Section Header */}
-        <div className="text-center mb-20">
-          <span className="inline-block px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-semibold mb-4">
-            NOS EXPERTISES
-          </span>
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-            Services Professionnels
-          </h2>
-          {/* Description - Taille augmentée */}
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Des solutions complètes pour tous vos besoins automobiles avec des
-            experts qualifiés
-          </p>
+        {/* Section Header - Entièrement cliquable vers la page des services */}
+        <div className="w-full text-center mb-20 group">
+          <Link to="/services" className="inline-block">
+            <span className="inline-block px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-semibold mb-4 group-hover:bg-blue-500/20 transition-colors">
+              NOS EXPERTISES
+            </span>
+            <h2 className="text-5xl md:text-6xl font-black text-white mb-6 group-hover:text-blue-400 transition-colors">
+              Services Professionnels
+            </h2>
+            {/* Description - Taille augmentée */}
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8 group-hover:text-blue-300 transition-colors">
+              Des solutions complètes pour tous vos besoins automobiles avec des
+              experts qualifiés
+            </p>
+          </Link>
+          {/* Bouton cliquable visible pour aller à la page des services */}
+          <button
+            onClick={() => navigate("/services")}
+            className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
+          >
+            Voir les autres services
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
+          </button>
         </div>
 
         {/* Services Grid - Thème sombre */}
@@ -96,34 +118,6 @@ const ServicesSection = () => {
                 <p className="text-base text-slate-300 leading-relaxed mb-4">
                   {service.description}
                 </p>
-
-                {/* Price - Taille augmentée */}
-                <div className="mb-4">
-                  <span className="text-xl font-black text-blue-400">
-                    {service.basePrice} TND
-                  </span>
-                </div>
-
-                {/* CTA Link */}
-                <button
-                  onClick={() => navigate("/services")}
-                  className="group/btn inline-flex items-center gap-2 text-blue-400 font-semibold hover:gap-3 transition-all"
-                >
-                  En savoir plus
-                  <svg
-                    className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
 
                 {/* Corner Accent */}
                 <div

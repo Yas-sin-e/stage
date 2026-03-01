@@ -23,10 +23,22 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const reservation = await Reservation.create({
-      ...req.body,
+    const { customProblem, aiDiagnosis, ...rest } = req.body;
+    
+    const reservationData = {
+      ...rest,
       userId: req.user._id
-    });
+    };
+    
+    if (customProblem) {
+      reservationData.customProblem = customProblem;
+    }
+    
+    if (aiDiagnosis) {
+      reservationData.aiDiagnosis = aiDiagnosis;
+    }
+    
+    const reservation = await Reservation.create(reservationData);
     
     const populated = await reservation.populate([
       { path: 'vehicleId', select: 'brand model plate' },

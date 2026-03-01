@@ -153,6 +153,16 @@ const LoginPage = () => {
               )}
             </div>
 
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
+
             <button
               type="submit"
               disabled={loading}

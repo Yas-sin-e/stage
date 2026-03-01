@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api/axios";
 import Swal from "sweetalert2";
+
 const GestionReservations = () => {
+  const navigate = useNavigate();
   const [reservations, setReservations] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -13,7 +16,6 @@ const GestionReservations = () => {
   const fetchReservations = async () => {
     try {
       const { data } = await api.get("/admin/reservations");
-      // t1: console.log(data);
       setReservations(data);
     } catch (error) {
       console.error("Erreur:", error);
@@ -28,21 +30,20 @@ const GestionReservations = () => {
       fetchReservations();
       Swal.fire({
         title: "Succès",
-        text: "Réservation acceptée et devis créé",
+        text: "Réservation acceptée",
         icon: "success",
         background: "#0f172a",
         color: "#ffffff",
-        confirmButtonColor: "#10b981"
+        confirmButtonColor: "#10b981",
       });
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Erreur lors de l'acceptation";
       Swal.fire({
         title: "Erreur",
-        text: errorMessage,
+        text: error.response?.data?.message || "Erreur",
         icon: "error",
         background: "#0f172a",
         color: "#ffffff",
-        confirmButtonColor: "#dc2626"
+        confirmButtonColor: "#dc2626",
       });
     }
   };
@@ -52,16 +53,13 @@ const GestionReservations = () => {
       title: "Refuser la réservation",
       input: "textarea",
       inputLabel: "Raison du refus",
-      inputPlaceholder: "Écrivez la raison هنا...",
+      inputPlaceholder: "Écrivez la raison ici...",
       showCancelButton: true,
       confirmButtonText: "Confirmer",
       cancelButtonText: "Annuler",
-      background: "#0f172a", // لون متناسق مع تصميمك الـ Slate-900
+      background: "#0f172a",
       color: "#ffffff",
-      confirmButtonColor: "#dc2626", // لون أحمر للرفض
-      inputAttributes: {
-        autocapitalize: "off",
-      },
+      confirmButtonColor: "#dc2626",
     });
     if (reason) {
       try {
@@ -122,48 +120,26 @@ const GestionReservations = () => {
               {reservations.length} réservation(s)
             </p>
           </div>
-
           <div className="flex gap-2">
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                filter === "all"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-              }`}
-            >
-              Toutes
-            </button>
-            <button
-              onClick={() => setFilter("pending")}
-              className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                filter === "pending"
-                  ? "bg-amber-600 text-white"
-                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-              }`}
-            >
-              En attente
-            </button>
-            <button
-              onClick={() => setFilter("accepted")}
-              className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                filter === "accepted"
-                  ? "bg-green-600 text-white"
-                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-              }`}
-            >
-              Acceptées
-            </button>
-            <button
-              onClick={() => setFilter("rejected")}
-              className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                filter === "rejected"
-                  ? "bg-red-600 text-white"
-                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-              }`}
-            >
-              Refusées
-            </button>
+            {["all", "pending", "accepted", "rejected"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+                  filter === f
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                }`}
+              >
+                {f === "all"
+                  ? "Toutes"
+                  : f === "pending"
+                    ? "En attente"
+                    : f === "accepted"
+                      ? "Acceptées"
+                      : "Refusées"}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -179,13 +155,10 @@ const GestionReservations = () => {
                     Véhicule
                   </th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-slate-400 uppercase">
-                    Service
+                    Service / Problème
                   </th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-slate-400 uppercase">
                     Date
-                  </th>
-                  <th className="text-left py-4 px-6 text-xs font-bold text-slate-400 uppercase">
-                    Heure
                   </th>
                   <th className="text-center py-4 px-6 text-xs font-bold text-slate-400 uppercase">
                     Statut
@@ -223,8 +196,23 @@ const GestionReservations = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-6 text-slate-300">
-                        {rdv.serviceId?.name}
+                      <td className="py-4 px-6">
+                        {rdv.serviceId?.name ? (
+                          <span className="text-slate-300">
+                            {rdv.serviceId.name}
+                          </span>
+                        ) : rdv.customProblem ? (
+                          <div>
+                            <span className="text-orange-400 font-semibold text-xs">
+                              Problème personnalisé:
+                            </span>
+                            <p className="text-slate-400 text-sm mt-1">
+                              {rdv.customProblem}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500">Non spécifié</span>
+                        )}
                       </td>
                       <td className="py-4 px-6 text-slate-400 text-sm">
                         {rdv.date
@@ -234,9 +222,9 @@ const GestionReservations = () => {
                               year: "numeric",
                             })
                           : "Non défini"}
-                      </td>
-                      <td className="py-4 px-6 text-slate-400 text-sm font-mono">
-                        {rdv.time}
+                        <div className="font-mono text-xs text-slate-500">
+                          {rdv.time}
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <span

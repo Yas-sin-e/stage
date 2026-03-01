@@ -24,6 +24,30 @@ const DevisPage = () => {
     }
   };
 
+  const handleAccept = async (id) => {
+    if (window.confirm("Accepter ce devis ?")) {
+      try {
+        await api.put(`/devis/${id}/accept`);
+        alert("✓ Devis accepté ! Une réparation a été créée.");
+        fetchDevis();
+      } catch (error) {
+        alert(error.response?.data?.message || "Erreur");
+      }
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (window.confirm("Refuser ce devis ?")) {
+      try {
+        await api.put(`/devis/${id}/reject`);
+        alert("✕ Devis refusé");
+        fetchDevis();
+      } catch (error) {
+        alert("Erreur");
+      }
+    }
+  };
+
   const getStatusStyle = (status) => {
     const styles = {
       pending: {
@@ -95,7 +119,7 @@ const DevisPage = () => {
               réparations !
             </p>
             <button
-              onClick={() => navigate("/contact")}
+              onClick={() => navigate("/services")}
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all"
             >
               Demander un devis
@@ -257,10 +281,23 @@ const DevisPage = () => {
 
                   {d.status === "pending" && (
                     <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-                      <p className="text-amber-400 text-base">
-                        ⏳ Votre devis est en cours de traitement. Nous
-                        reviendrons vers vous bientôt.
+                      <p className="text-amber-400 text-base mb-4">
+                        ⏳ Devis en attente de votre décision
                       </p>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleAccept(d._id)}
+                          className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all"
+                        >
+                          ✓ Accepter le devis
+                        </button>
+                        <button
+                          onClick={() => handleReject(d._id)}
+                          className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-all"
+                        >
+                          ✕ Refuser
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

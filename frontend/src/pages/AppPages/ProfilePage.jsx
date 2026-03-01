@@ -21,11 +21,13 @@ const ProfilePage = () => {
     setError,
     clearErrors,
   } = useForm();
+
   const {
     register: regPass,
     handleSubmit: handlePass,
     watch,
     reset,
+    formState: { errors: passwordErrors },
   } = useForm();
 
   useEffect(() => {
@@ -47,6 +49,23 @@ const ProfilePage = () => {
       alert(err.response?.data?.message || "Erreur");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onChangePassword = async (data) => {
+    try {
+      await api.put("/auth/change-password", {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      alert("Mot de passe changé !");
+      setShowPasswordModal(false);
+      reset();
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          "Erreur lors du changement de mot de passe",
+      );
     }
   };
 
@@ -181,7 +200,7 @@ const ProfilePage = () => {
                           message: "Email invalide",
                         },
                         validate: async (value) => {
-                          if (value === user?.email) return true; // Same email, no check needed
+                          if (value === user?.email) return true;
                           try {
                             const response = await api.post(
                               "/auth/check-email",
@@ -244,26 +263,14 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Modal Password - استعمل نفس المنطق مع useForm */}
+      {/* Modal Password */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-8">
             <h2 className="text-xl font-black text-white mb-6 uppercase">
               Sécurité <span className={`text-${themeColor}-500`}>Account</span>
             </h2>
-            <form
-              onSubmit={handlePass(async (data) => {
-                try {
-                  await api.put("/auth/change-password", data);
-                  alert("Mot de passe changé !");
-                  setShowPasswordModal(false);
-                  reset();
-                } catch (err) {
-                  alert(err.response?.data?.message);
-                }
-              })}
-              className="space-y-4"
-            >
+            <form onSubmit={handlePass(onChangePassword)} className="space-y-4">
               <div className="space-y-1">
                 <input
                   type="password"
@@ -273,9 +280,9 @@ const ProfilePage = () => {
                   placeholder="Mot de passe actuel"
                   className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white focus:border-blue-500 transition-all"
                 />
-                {errors.currentPassword && (
+                {passwordErrors?.currentPassword && (
                   <p className="text-red-400 text-xs">
-                    {errors.currentPassword.message}
+                    {passwordErrors.currentPassword.message}
                   </p>
                 )}
               </div>
@@ -285,22 +292,16 @@ const ProfilePage = () => {
                   {...regPass("newPassword", {
                     required: "Mot de passe requis",
                     minLength: {
-                      value: 8,
-                      message: "Minimum 8 caractères",
-                    },
-                    pattern: {
-                      value:
-                        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-                      message:
-                        "Doit contenir majuscule, minuscule, chiffre et caractère spécial",
+                      value: 6,
+                      message: "Minimum 6 caractères",
                     },
                   })}
                   placeholder="Nouveau mot de passe"
                   className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white focus:border-blue-500 transition-all"
                 />
-                {errors.newPassword && (
+                {passwordErrors?.newPassword && (
                   <p className="text-red-400 text-xs">
-                    {errors.newPassword.message}
+                    {passwordErrors.newPassword.message}
                   </p>
                 )}
               </div>
@@ -316,9 +317,9 @@ const ProfilePage = () => {
                   placeholder="Confirmer le nouveau"
                   className="w-full bg-black border border-slate-800 rounded-xl p-4 text-white focus:border-blue-500 transition-all"
                 />
-                {errors.confirmPassword && (
+                {passwordErrors?.confirmPassword && (
                   <p className="text-red-400 text-xs">
-                    {errors.confirmPassword.message}
+                    {passwordErrors.confirmPassword.message}
                   </p>
                 )}
               </div>

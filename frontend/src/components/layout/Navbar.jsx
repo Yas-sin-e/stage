@@ -40,15 +40,15 @@ const Navbar = () => {
     { title: "Accueil", path: "/" },
     { title: "Services", path: "/services" },
     { title: "À propos", path: "/about" },
-    { title: "Contact", path: "/contact" },
+  
   ];
 
   const clientSubmenuItems = [
     { title: "Dashboard", path: "/dashboard" },
     { title: "Mes Véhicules", path: "/my-vehicles" },
+    { title: "Mes Réservations", path: "/reservations" },
     { title: "Mes Devis", path: "/devis" },
-    { title: " New Réservations", path: "/reservations/new" },
-    { title: " Chat IA", path: "/chat-ai" },
+    { title: "New Réservations", path: "/reservations/new" },
   ];
 
   const adminMenuItems = [
@@ -125,8 +125,8 @@ const Navbar = () => {
           </div>
 
           {/* MENU DESKTOP - AU CENTRE */}
-          <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2">
-            <ul className="flex items-center gap-2 list-none m-0 p-0">
+          <div className="hidden lg:flex flex-1 justify-center max-w-3xl mx-auto">
+            <ul className="flex items-center gap-4 list-none m-0 p-0">
               {mainMenuItems.map((item, i) => (
                 <li key={i}>
                   <Link
@@ -146,7 +146,7 @@ const Navbar = () => {
                   <li className="relative">
                     <button
                       onMouseEnter={() => setShowClientDropdown(true)}
-                      className="flex items-center gap-1 px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50"
+                      className="flex items-center gap-1 px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50 whitespace-nowrap"
                     >
                       Mon Espace
                       <svg
@@ -205,22 +205,23 @@ const Navbar = () => {
           </div>
 
           {/* USER ACTIONS - À DROITE */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
                 {/* User Info (desktop only) */}
                 <div className="hidden xl:flex items-center gap-3 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700">
                   <div
-                    className={`w-8 h-8 rounded-full bg-gradient-to-br ${user?.role === "admin" ? "from-purple-500 to-pink-500" : "from-blue-500 to-purple-500"} flex items-center justify-center font-bold text-sm`}
+                    className={`w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br ${user?.role === "admin" ? "from-purple-500 to-pink-500" : "from-blue-500 to-purple-500"} flex items-center justify-center font-bold text-sm`}
                   >
                     {user?.name?.charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <div className="text-xs text-slate-400">
+                  <div className="min-w-0">
+                    <div className="text-xs text-slate-400 whitespace-nowrap">
                       {user?.role === "admin" ? "Administrateur" : "Client"}
                     </div>
                     <div
-                      className={`text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r ${user?.role === "admin" ? "from-purple-400 to-pink-400" : "from-blue-400 to-purple-400"}`}
+                      className={`text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r ${user?.role === "admin" ? "from-purple-400 to-pink-400" : "from-blue-400 to-purple-400"} truncate max-w-[150px]`}
+                      title={user?.name}
                     >
                       {user?.name}
                     </div>
