@@ -188,8 +188,8 @@ flowchart LR
     IA -->|Pre-diagnostic et Conseils| Client
     Client -->|Prise de RDV| R[Module Reservation]
     R -->|Validation| Admin([Administrateur / Garagiste])
-    Admin -->|Creation Devis| D[Systeme de Devis]
-    D -->|Acceptation par le client| Rep[Suivi de Reparation]
+    Admin -->|Creation Devis| D[Module Devis]
+    D -->|Acceptation par le client| Rep[Module Reparation]
     Rep -->|Statut en temps reel| Client
 ```
 
