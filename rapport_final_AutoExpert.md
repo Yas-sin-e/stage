@@ -273,11 +273,13 @@ Le produit vise à transformer l'expérience client en leur offrant la transpare
 
 Avant d'identifier les exigences du système, il est essentiel de définir les acteurs principaux :
 
-| Acteur             | Définition                                                                                | Tâches principales                                                                                                                                                                                                                                                 |
-| :----------------- | :---------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Visiteur**       | Personne **non authentifiée** ayant accès aux pages publiques (sans être connecté).       | Consulter l'accueil, consulter les services, s'inscrire, se connecter, **réinitialiser son mot de passe** _(l'utilisateur possède déjà un compte mais a oublié son mot de passe — il initie la réinitialisation depuis la page de connexion, sans être connecté)_. |
-| **Client**         | Utilisateur **authentifié** interagissant avec les services du garage pour ses véhicules. | Gérer profil, véhicules, réservations, devis, réparations, Chat IA.                                                                                                                                                                                                |
-| **Administrateur** | Gestionnaire du garage disposant d'un **accès complet** au système.                       | Gérer clients, services, réservations, devis, réparations, tableau de bord analytique.                                                                                                                                                                             |
+| Acteur             | Définition                                                                                | Tâches principales                                                                                                                         |
+| :----------------- | :---------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Visiteur**       | Personne **non authentifiée** ayant accès aux pages publiques (sans être connecté).       | Consulter l'accueil, consulter les services, s'inscrire, se connecter, **Demander un lien de réinitialisation de mot de passe par email**. |
+| **Client**         | Utilisateur **authentifié** interagissant avec les services du garage pour ses véhicules. | Gérer profil, véhicules, réservations, devis, réparations, Chat IA.                                                                        |
+| **Administrateur** | Gestionnaire du garage disposant d'un **accès complet** au système.                       | Gérer clients, services, réservations, devis, réparations, tableau de bord analytique.                                                     |
+
+**Remarque :** Le Visiteur et le Client sont deux rôles distincts. Un Visiteur devient Client après authentification réussie. L'Administrateur dispose d'un accès étendu à toutes les fonctionnalités de gestion.
 
 ### 1.3 Les besoins fonctionnels par acteur
 
@@ -286,9 +288,12 @@ Avant d'identifier les exigences du système, il est essentiel de définir les a
 - **Gestion de l'authentification :**
   - L'application doit permettre à un visiteur de s'inscrire (nom, téléphone, email unique, mot de passe ≥ 6 caractères).
   - L'application doit permettre au visiteur de se connecter (email/mot de passe).
-  - L'application doit permettre à un utilisateur ayant oublié son mot de passe de le réinitialiser via un lien envoyé par **email**. Une fois le lien cliqué, l'utilisateur peut définir un nouveau mot de passe.
+  - **Gestion de la réinitialisation du mot de passe :**
+    1. L'application doit permettre à un utilisateur de demander la réinitialisation en saisissant son email.
+    2. Le système génère un token unique et envoie un email contenant un lien sécurisé (usage unique, expire après 24h).
+    3. L'utilisateur clique sur le lien et définit un nouveau mot de passe.
 - **Gestion du profil :** L'application doit permettre au client de consulter et mettre à jour ses informations personnelles et de modifier son mot de passe.
-- **Gestion des véhicules :** L'application doit permettre au client d'ajouter un véhicule (Marque, Modèle, Année, Immatriculation, VIN), de les modifier ou supprimer.
+- **Gestion des véhicules :** L'application doit permettre au client d'ajouter un véhicule (Marque, Modèle, Année, Immatriculation, VIN, Kilométrage, Couleur), de les modifier ou supprimer.
 - **Gestion des réservations :** L'application doit permettre au client de prendre un rendez-vous (véhicule, service, date), consulter l'historique ou annuler une réservation.
 - **Gestion des devis et réparations :** L'application doit permettre au client de demander un devis, accepter ou refuser un devis formalisé, et suivre ses réparations.
 - **Assistance virtuelle :** L'application doit permettre au client d'interagir avec une IA spécialisée pour obtenir des diagnostics primaires.
@@ -321,13 +326,12 @@ Le diagramme de cas d'utilisation global illustre l'ensemble des interactions en
 **Figure 2.1 : Diagramme de cas d'utilisation global d'AutoExpert**
 
 ```plantuml
-@startuml DiagUseCaseGlobal
-left to right direction
+@startuml UseCaseGlobal_CORRECTED
 skinparam actorStyle awesome
 skinparam usecase {
-    BackgroundColor LightBlue
-    BorderColor NavyBlue
-    FontSize 12
+  BackgroundColor LightBlue
+  BorderColor NavyBlue
+  FontSize 12
 }
 
 actor "Visiteur" as V
@@ -342,7 +346,8 @@ rectangle "AutoExpert - Systeme" {
         usecase "Consulter les Services" as UC_SERV
         usecase "S'inscrire" as UC_REG
         usecase "Se connecter" as UC_LOG
-        usecase "Mot de passe oublie" as UC_FORGOT
+        usecase "Demander reinitialisation MDP" as UC_FORGOT
+        usecase "Envoyer email reinitialisation" as UC_SEND_EMAIL
         usecase "Reinitialiser le mot de passe" as UC_RESET
     }
 
@@ -374,8 +379,9 @@ V --> UC_REG
 V --> UC_LOG
 V --> UC_FORGOT
 
-UC_FORGOT ..> UC_RESET : <<include>>
-UC_FORGOT ..> MAIL : <<include>>
+UC_FORGOT ..> UC_SEND_EMAIL : <<include>>
+UC_SEND_EMAIL --> MAIL : utilise
+UC_RESET ..> UC_SEND_EMAIL : <<extend>>\ncondition: lien clique
 
 C --> UC_LOG
 C --> UC_PROFIL
@@ -396,8 +402,21 @@ A --> UC_AD_RES
 A --> UC_AD_DV
 A --> UC_AD_REP
 
+note right of UC_RESET
+  Extension conditionnelle :
+  S'execute uniquement si
+  l'utilisateur clique sur
+  le lien dans l'email
+end note
+
 @enduml
 ```
+
+**Relations UML utilisées :**
+
+- `<<include>>` : Relation d'inclusion obligatoire. Le cas inclus s'exécute systématiquement. Exemple : 'Demander réinitialisation MDP' inclut toujours 'Envoyer email réinitialisation'.
+- `<<extend>>` : Relation d'extension conditionnelle. Le cas étendu s'exécute uniquement si une condition est remplie. Exemple : 'Réinitialiser le mot de passe' étend 'Envoyer email réinitialisation' si l'utilisateur clique sur le lien.
+- Association simple : Indique qu'un acteur initie directement un cas d'utilisation ou qu'un cas utilise un acteur secondaire.
 
 ---
 
@@ -405,14 +424,14 @@ A --> UC_AD_REP
 
 **Tableau 2.1 : Entités et Attributs du système AutoExpert**
 
-| Entité          | Attributs principaux                                                                            | Type                     | Contrainte                                                    |
-| :-------------- | :---------------------------------------------------------------------------------------------- | :----------------------- | :------------------------------------------------------------ |
-| **User**        | `_id`, `name`, `email`, `password`, `phone`, `role`, `isActive`, `createdAt`                    | String, Boolean, Date    | email unique ; role ∈ {client, admin} ; password hashé Bcrypt |
-| **Vehicle**     | `_id`, `userId`, `make`, `model`, `year`, `licensePlate`, `VIN`, `mileage`, `color`             | String, Number, ObjectId | licensePlate unique ; userId → User                           |
-| **Service**     | `_id`, `name`, `description`, `basePrice`, `estimatedTime`, `category`, `isActive`              | String, Number, Boolean  | category ∈ {Entretien, Réparation, Diagnostic, Carrosserie}   |
-| **Reservation** | `_id`, `userId`, `vehicleId`, `serviceId`, `date`, `status`, `notes`                            | ObjectId, Date, String   | status ∈ {pending, confirmed, completed, cancelled}           |
-| **Devis**       | `_id`, `userId`, `vehicleId`, `services[]`, `totalPrice`, `status`, `validUntil`, `description` | ObjectId, Number, Date   | status ∈ {pending, accepted, rejected}                        |
-| **Reparation**  | `_id`, `vehicleId`, `devisId`, `services[]`, `status`, `startDate`, `endDate`, `notes`          | ObjectId, Date, String   | status ∈ {in_progress, completed, delivered}                  |
+| Entité          | Attributs principaux                                                                                                              | Type                     | Contrainte                                                    |
+| :-------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :----------------------- | :------------------------------------------------------------ |
+| **User**        | `_id`, `name`, `email`, `password`, `phone`, `role`, `isActive`, `resetPasswordToken`, `resetPasswordExpires`, `createdAt`        | String, Boolean, Date    | email unique ; role ∈ {client, admin} ; password hashé Bcrypt |
+| **Vehicle**     | `_id`, `userId`, `make`, `model`, `year`, `licensePlate`, `VIN`, `mileage`, `color`                                               | String, Number, ObjectId | licensePlate unique ; userId → User                           |
+| **Service**     | `_id`, `name`, `description`, `basePrice`, `estimatedTime`, `category`, `isActive`                                                | String, Number, Boolean  | category ∈ {Entretien, Réparation, Diagnostic, Carrosserie}   |
+| **Reservation** | `_id`, `userId`, `vehicleId`, `serviceId`, `date`, `status`, `notes`                                                              | ObjectId, Date, String   | status ∈ {pending, confirmed, completed, cancelled}           |
+| **Devis**       | `_id`, `userId`, `vehicleId`, `services: [{serviceId, quantity, unitPrice}]`, `totalPrice`, `status`, `validUntil`, `description` | ObjectId, Number, Date   | status ∈ {pending, accepted, rejected}                        |
+| **Reparation**  | `_id`, `vehicleId`, `devisId`, `services[]`, `status`, `startDate`, `endDate`, `notes`                                            | ObjectId, Date, String   | status ∈ {in_progress, completed, delivered}                  |
 
 ---
 
@@ -433,16 +452,19 @@ Les besoins ont été découpés en trois modules majeurs (Foundational Setup, O
 
 **Tableau 2.3 : Product Backlog d'AutoExpert**
 
-| Module                     | Fonctionnalité                | ID  | Histoire Utilisateur                                                                                                                                                                                                                             | Priorité | Effort (Pts) |
-| :------------------------- | :---------------------------- | :-: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- | :----------: |
-| **Foundational Setup**     | **Gestion d'accès et profil** |  1  | **En tant que** Visiteur, je veux m'inscrire ou me connecter.<br><br>**En tant qu'** Utilisateur, je veux réinitialiser mon mot de passe en cas d'oubli.<br><br>**En tant que** Client, je veux éditer les informations générales de mon compte. | Haute    |      10      |
-|                            | **Gestion des services**      |  2  | **En tant qu'** administrateur, je veux créer, modifier, consulter, archiver et lister les prestations (services) proposées par le garage.                                                                                                       | Haute    |      2       |
-| **Operational Essentials** | **Gestion des véhicules**     |  3  | **En tant que** client, je veux enregistrer, consulter, modifier et supprimer la liste de mes véhicules (marque, modèle, immatriculation).                                                                                                       | Haute    |      3       |
-|                            | **Gestion des réservations**  |  4  | **En tant que** client, je veux prendre, consulter ou annuler un rendez-vous (Date, Véhicule, Service).<br><br>**En tant qu'** administrateur, je veux consulter, accepter ou refuser ces réservations.                                          | Haute    |      7       |
-|                            | **Gestion des devis**         |  5  | **En tant qu'** administrateur, je veux créer et attribuer un devis chiffré comprenant les services requis et le coût total.<br><br>**En tant que** client, je veux consulter le détail de ce devis pour l'accepter ou le refuser.               | Haute    |      7       |
-| **Application Control**    | **Suivi des réparations**     |  6  | **En tant qu'** administrateur, je veux gérer et faire évoluer les statuts d'une réparation (En cours, Terminée, Livrée) suite à l'acceptation d'un devis par le client.                                                                         | Haute    |      2       |
-|                            | **Tableau de Bord**           |  7  | **En tant qu'** administrateur, je veux visualiser les statistiques (revenus, réservations, statut des réparations) sous forme de graphiques.                                                                                                    | Moyenne  |      3       |
-|                            | **Chat IA Automobile**        |  8  | **En tant que** client, je veux dialoguer avec un assistant virtuel (IA locale) pour obtenir un pré-diagnostic mécanique personnalisé avant prise de rendez-vous.                                                                                | Faible   |      3       |
+| Module                     | Fonctionnalité                | ID  | Histoire Utilisateur                                                                                                                                                                                                               | Priorité | Effort (Pts) |
+| :------------------------- | :---------------------------- | :-: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- | :----------: |
+| **Foundational Setup**     | **Gestion d'accès et profil** | 1a  | **En tant que** Visiteur, je veux m'inscrire avec mes informations (nom, email, téléphone, mot de passe) afin de créer un compte client.                                                                                           | Haute    |      3       |
+|                            |                               | 1b  | **En tant que** Visiteur, je veux me connecter avec mon email et mot de passe afin d'accéder à mon espace personnel.                                                                                                               | Haute    |      2       |
+|                            |                               | 1c  | **En tant qu'** Utilisateur ayant oublié son mot de passe, je veux recevoir un lien de réinitialisation par email afin de définir un nouveau mot de passe de manière sécurisée.                                                    | Haute    |      3       |
+|                            |                               | 1d  | **En tant que** Client connecté, je veux consulter et modifier mes informations personnelles afin de maintenir mon profil à jour.                                                                                                  | Haute    |      2       |
+|                            | **Gestion des services**      |  2  | **En tant qu'** administrateur, je veux créer, modifier, consulter, archiver et lister les prestations (services) proposées par le garage.                                                                                         | Haute    |      2       |
+| **Operational Essentials** | **Gestion des véhicules**     |  3  | **En tant que** client, je veux enregistrer, consulter, modifier et supprimer la liste de mes véhicules (marque, modèle, immatriculation).                                                                                         | Haute    |      3       |
+|                            | **Gestion des réservations**  |  4  | **En tant que** client, je veux prendre, consulter ou annuler un rendez-vous (Date, Véhicule, Service).<br><br>**En tant qu'** administrateur, je veux consulter, accepter ou refuser ces réservations.                            | Haute    |      7       |
+|                            | **Gestion des devis**         |  5  | **En tant qu'** administrateur, je veux créer et attribuer un devis chiffré comprenant les services requis et le coût total.<br><br>**En tant que** client, je veux consulter le détail de ce devis pour l'accepter ou le refuser. | Haute    |      7       |
+| **Application Control**    | **Suivi des réparations**     |  6  | **En tant qu'** administrateur, je veux gérer et faire évoluer les statuts d'une réparation (En cours, Terminée, Livrée) suite à l'acceptation d'un devis par le client.                                                           | Haute    |      2       |
+|                            | **Tableau de Bord**           |  7  | **En tant qu'** administrateur, je veux visualiser les statistiques (revenus, réservations, statut des réparations) sous forme de graphiques.                                                                                      | Moyenne  |      3       |
+|                            | **Chat IA Automobile**        |  8  | **En tant que** client, je veux dialoguer avec un assistant virtuel (IA locale) pour obtenir un pré-diagnostic mécanique personnalisé avant prise de rendez-vous.                                                                  | Moyenne  |      3       |
 
 ### 4.3 Planification des Sprints
 
@@ -452,7 +474,7 @@ Le projet a été découpé en trois sprints. Le tableau ci-dessous indique le m
 
 | Sprints      | Module Name                | Fonctionnalités                                                                 | Durée     |
 | :----------- | :------------------------- | :------------------------------------------------------------------------------ | :-------- |
-| **Sprint 1** | **Foundational Setup**     | - Gestion d'accès et profil<br>- Gestion des services                           | 1 Semaine |
+| **Sprint 1** | **Foundational Setup**     | - Gestion d'accès et profil (US 1a, 1b, 1c, 1d)<br>- Gestion des services       | 1 Semaine |
 | **Sprint 2** | **Operational Essentials** | - Gestion des véhicules<br>- Gestion des réservations<br>- Gestion des devis    | 1 Semaine |
 | **Sprint 3** | **Application Control**    | - Suivi des réparations<br>- Tableau de bord analytique<br>- Chat IA Automobile | 1 Semaine |
 
@@ -464,13 +486,13 @@ Le projet a été découpé en trois sprints. Le tableau ci-dessous indique le m
 
 Le développement de la plateforme AutoExpert a été réalisé sur une machine de développement disposant des caractéristiques suivantes :
 
-| Composant                  | Spécification                                     |
-| :------------------------- | :------------------------------------------------ |
-| **Processeur (CPU)**       | _(Insérer : ex. Intel Core i7-12th Gen, 2.1 GHz)_ |
-| **Mémoire vive (RAM)**     | _(Insérer : ex. 16 Go DDR4)_                      |
-| **Stockage**               | _(Insérer : ex. SSD 512 Go NVMe)_                 |
-| **Système d'exploitation** | _(Insérer : ex. Windows 11 / Ubuntu 22.04)_       |
-| **Résolution d'écran**     | _(Insérer : ex. 1920 x 1080 Full HD)_             |
+| Composant                  | Spécification             |
+| :------------------------- | :------------------------ |
+| **Processeur (CPU)**       | Intel Core i5-11400H      |
+| **Mémoire vive (RAM)**     | 16 Go DDR4                |
+| **Stockage**               | SSD 512 Go NVMe           |
+| **Système d'exploitation** | Windows 11 / Ubuntu 22.04 |
+| **Résolution d'écran**     | 1920 x 1080 Full HD       |
 
 _Tableau 2.5 : Caractéristiques de l'environnement matériel de développement_
 
@@ -490,17 +512,17 @@ _Tableau 2.6 : Outils de développement utilisés_
 
 #### B. Frameworks et Bibliothèques (Frameworks & Libraries)
 
-| Technologie           |        Logo         | Rôle               | Description                                                                                                                                                                                                            |
-| :-------------------- | :-----------------: | :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Node.js**           |  _(logo Node.js)_   | Runtime Backend    | Environnement d'exécution JavaScript côté serveur, basé sur le moteur V8 de Chrome. Il permet d'exécuter du JavaScript en dehors du navigateur pour construire des serveurs performants et non-bloquants.              |
-| **Express.js**        |  _(logo Express)_   | Framework Backend  | Micro-framework minimaliste pour Node.js permettant de créer rapidement des serveurs HTTP, de définir des routes REST et de gérer les middlewares (authentification, gestion d'erreurs, etc.).                         |
-| **React.js**          |   _(logo React)_    | Framework Frontend | Bibliothèque JavaScript (Facebook/Meta) pour la construction d'interfaces utilisateur dynamiques sous forme de composants réutilisables. Couplé à Vite pour un démarrage rapide et un rechargement instantané (HMR).   |
-| **Tailwind CSS**      |  _(logo Tailwind)_  | Stylisation UI     | Framework CSS utilitaire permettant de styler l'interface directement via des classes CSS prédéfinies. Il produit des designs responsives, modernes et cohérents sans écrire de CSS personnalisé.                      |
-| **Mongoose**          |  _(logo Mongoose)_  | ODM MongoDB        | ODM (Object Data Modeling) pour MongoDB et Node.js. Il fournit un système de schémas typés, la validation des données, les relations entre documents et une interface simplifiée pour les requêtes vers MongoDB.       |
-| **Axios**             |   _(logo Axios)_    | Client HTTP        | Bibliothèque JavaScript pour effectuer des requêtes HTTP asynchrones depuis le Frontend React vers le Backend Express. Elle gère automatiquement la sérialisation JSON et les headers d'authentification (tokens JWT). |
-| **Nodemailer**        | _(logo Nodemailer)_ | Serveur Mail       | Module Node.js pour l'envoi d'emails via un serveur SMTP. Utilisé pour envoyer les liens de réinitialisation de mot de passe aux utilisateurs ayant oublié leur accès.                                                 |
-| **Ollama (llama3.1)** |   _(logo Ollama)_   | Moteur IA          | Plateforme d'exécution de modèles de langage (LLM) en local. Le modèle llama3.1, configuré via un Modelfile spécialisé automobile, alimente le Chat IA de diagnostic du projet AutoExpert.                             |
-| **Recharts**          |  _(logo Recharts)_  | Visualisation      | Bibliothèque de graphiques React pour la visualisation de données (camemberts, barres, courbes). Utilisée dans le tableau de bord administrateur pour afficher les statistiques du garage.                             |
+| Technologie           |        Logo         | Rôle               | Description                                                                                                                                                                                                                                                      |
+| :-------------------- | :-----------------: | :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Node.js**           |  _(logo Node.js)_   | Runtime Backend    | Environnement d'exécution JavaScript côté serveur, basé sur le moteur V8 de Chrome. Il permet d'exécuter du JavaScript en dehors du navigateur pour construire des serveurs performants et non-bloquants.                                                        |
+| **Express.js**        |  _(logo Express)_   | Framework Backend  | Micro-framework minimaliste pour Node.js permettant de créer rapidement des serveurs HTTP, de définir des routes REST et de gérer les middlewares (authentification, gestion d'erreurs, etc.).                                                                   |
+| **React.js**          |   _(logo React)_    | Framework Frontend | Bibliothèque JavaScript (Facebook/Meta) pour la construction d'interfaces utilisateur dynamiques sous forme de composants réutilisables. Couplé à Vite pour un démarrage rapide et un rechargement instantané (HMR).                                             |
+| **Tailwind CSS**      |  _(logo Tailwind)_  | Stylisation UI     | Framework CSS utilitaire permettant de styler l'interface directement via des classes CSS prédéfinies. Il produit des designs responsives, modernes et cohérents sans écrire de CSS personnalisé.                                                                |
+| **Mongoose**          |  _(logo Mongoose)_  | ODM MongoDB        | ODM (Object Data Modeling) pour MongoDB et Node.js. Il fournit un système de schémas typés, la validation des données, les relations entre documents et une interface simplifiée pour les requêtes vers MongoDB.                                                 |
+| **Axios**             |   _(logo Axios)_    | Client HTTP        | Bibliothèque JavaScript pour effectuer des requêtes HTTP asynchrones depuis le Frontend React vers le Backend Express. Elle gère automatiquement la sérialisation JSON et les headers d'authentification (tokens JWT).                                           |
+| **Nodemailer**        | _(logo Nodemailer)_ | Serveur Mail       | Module Node.js pour l'envoi d'emails via un serveur SMTP. Utilisé pour envoyer les liens de réinitialisation de mot de passe aux utilisateurs ayant oublié leur accès.                                                                                           |
+| **Ollama (llama3.1)** |   _(logo Ollama)_   | Moteur IA          | Plateforme d'exécution de modèles de langage (LLM) en local. Le modèle llama3.1, configuré via un Modelfile spécialisé automobile, alimente le Chat IA de diagnostic du projet AutoExpert. _(Nécessite une installation séparée sur le système d'exploitation)._ |
+| **Recharts**          |  _(logo Recharts)_  | Visualisation      | Bibliothèque de graphiques React pour la visualisation de données (camemberts, barres, courbes). Utilisée dans le tableau de bord administrateur pour afficher les statistiques du garage.                                                                       |
 
 _Tableau 2.7 : Frameworks et bibliothèques utilisés_
 
@@ -521,13 +543,14 @@ _Tableau 2.8 : Langages et standards utilisés_
 
 ### 5.3 Architecture recommandée : MERN
 
-Nous avons adopté l'architecture **MERN** (MongoDB · Express · React · Node.js), qui assure une **séparation claire** entre la couche de présentation (Frontend), la couche métier (Backend) et la couche de données (Base de données), tout en maintenant une **homogénéité** grâce à l'usage exclusif de JavaScript de bout en bout.
+Nous avons adopté l'architecture **MERN** (MongoDB · Express · React · Node.js), qui assure une **séparation claire** entre la couche de présentation (Frontend, accessible sur le port **5173**), la couche métier (Backend, exposé sur le port **5000**) et la couche de données (Base de données, locale sur le port **27017**), tout en maintenant une **homogénéité** grâce à l'usage exclusif de JavaScript de bout en bout. L'assistant IA interactif, Ollama, écoute quant à lui sur le port **11434**.
 
 Cette architecture est également **modulaire et flexible**, ce qui facilite les évolutions futures et la maintenance du code. Chaque couche est indépendante et communique avec les autres via des interfaces bien définies (API REST + Axios).
 
-- **Frontend** : React.js (SPA avec Vite + Tailwind CSS)
-- **Backend** : Node.js + Express.js (API REST sécurisée par JWT)
-- **Base de données** : MongoDB (documents JSON via Mongoose)
+- **Frontend** : React.js (Port `:5173` avec Vite + Tailwind CSS)
+- **Backend** : Node.js + Express.js (Port `:5000`, API REST sécurisée par JWT)
+- **Base de données** : MongoDB (Port `:27017`, documents JSON via Mongoose)
+- **Moteur IA** : Ollama (Port `:11434`, exécuté en tant que service local)
 
 La figure ci-dessous résume le **flux de données** entre le Frontend, le Backend et les endpoints de l'API :
 
@@ -548,7 +571,7 @@ _Figure 2.2 : Architecture MERN — flux de données entre les 3 couches_
 
 ## Conclusion du Chapitre 2
 
-Ce second chapitre a permis de formaliser les besoins et spécifications du projet AutoExpert. Le Product Backlog enrichi structure l'ensemble des 13 User Stories (incluant la réinitialisation de mot de passe par email - **US0**) avec leurs critères d'acceptation et estimations. La méthodologie Scrum, l'écosystème MERN et les outils choisis constituent une base solide pour aborder la phase de réalisation présentée dans le chapitre suivant.
+Ce second chapitre a permis de formaliser les besoins et spécifications du projet AutoExpert. Le Product Backlog enrichi structure l'ensemble des fonctionnalités et cas d'usage avec leurs critères d'acceptation et estimations. La méthodologie Scrum, l'écosystème MERN et les outils choisis constituent une base solide pour aborder la phase de réalisation présentée dans le chapitre suivant.
 
 # CHAPITRE 3 : Réalisation et tests
 
