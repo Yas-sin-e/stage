@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import api from "../../services/api/axios";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
 
 const GestionReparations = () => {
   const [reparations, setReparations] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const { toasts, showToast, removeToast } = useToast();
 
   useEffect(() => {
     fetchReparations();
@@ -25,8 +28,9 @@ const GestionReparations = () => {
     try {
       await api.put(`/admin/reparations/${id}/start`);
       fetchReparations();
+      showToast('Réparation démarrée', 'success');
     } catch (error) {
-      alert("Erreur");
+      showToast('Erreur', 'error');
     }
   };
 
@@ -35,8 +39,9 @@ const GestionReparations = () => {
     try {
       await api.put(`/admin/reparations/${id}/complete`, { notes });
       fetchReparations();
+      showToast('Réparation terminée', 'success');
     } catch (error) {
-      alert("Erreur");
+      showToast('Erreur', 'error');
     }
   };
   const handleDeliver = async (id) => {
@@ -46,8 +51,9 @@ const GestionReparations = () => {
       try {
         await api.put(`/admin/reparations/${id}/Livre`);
         fetchReparations();
+        showToast('Véhicule livré au client', 'success');
       } catch (error) {
-        alert("Erreur lors de la livraison");
+        showToast('Erreur lors de la livraison', 'error');
       }
     }
   };
@@ -285,6 +291,14 @@ const GestionReparations = () => {
           </div>
         </div>
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 };

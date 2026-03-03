@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import api from "../../services/api/axios";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
 
 const GestionServices = () => {
   const [services, setServices] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { toasts, showToast, removeToast } = useToast();
 
   const {
     register,
@@ -41,13 +44,17 @@ const GestionServices = () => {
     try {
       if (editingService) {
         await api.put(`/admin/services/${editingService._id}`, data);
+        showToast('Service mis à jour avec succès', 'success');
       } else {
         await api.post("/admin/services", data);
+        showToast('Service créé avec succès', 'success');
       }
       fetchServices();
       handleCloseModal();
     } catch (error) {
-      alert("Erreur lors de la sauvegarde");
+      console.error('Erreur:', error);
+      const message = error.response?.data?.message || 'Erreur lors de la sauvegarde';
+      showToast(message, 'error');
     }
   };
 
@@ -73,9 +80,12 @@ const GestionServices = () => {
     if (window.confirm("Supprimer ce service ?")) {
       try {
         await api.delete(`/admin/services/${id}`);
+        showToast('Service supprimé avec succès', 'success');
         fetchServices();
       } catch (error) {
-        alert("Erreur lors de la suppression");
+        console.error('Erreur:', error);
+        const message = error.response?.data?.message || 'Erreur lors de la suppression';
+        showToast(message, 'error');
       }
     }
   };
@@ -270,6 +280,14 @@ const GestionServices = () => {
           </div>
         )}
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 };

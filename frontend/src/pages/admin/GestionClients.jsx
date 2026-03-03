@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import api from "../../services/api/axios";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
 
 const GestionClients = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { toasts, showToast, removeToast } = useToast();
 
   // الحالة الخاصة بالنافذة المنبثقة والعميل المختار
   const [selectedClient, setSelectedClient] = useState(null);
@@ -34,8 +37,9 @@ const GestionClients = () => {
           c._id === client._id ? { ...c, isActive: !c.isActive } : c,
         ),
       );
+      showToast(`Client ${!client.isActive ? 'activé' : 'banni'} avec succès`, 'success');
     } catch (error) {
-      alert("Erreur lors de la mise à jour");
+      showToast("Erreur lors de la mise à jour", 'error');
     }
   };
 
@@ -48,8 +52,9 @@ const GestionClients = () => {
       try {
         await api.delete(`/admin/clients/${id}`);
         setClients(clients.filter((c) => c._id !== id));
+        showToast('Client supprimé avec succès', 'success');
       } catch (error) {
-        alert("Erreur lors de la suppression");
+        showToast("Erreur lors de la suppression", 'error');
       }
     }
   };
@@ -244,6 +249,14 @@ const GestionClients = () => {
           </div>
         )}
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 };

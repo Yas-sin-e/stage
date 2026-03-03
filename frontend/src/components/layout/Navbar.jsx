@@ -127,7 +127,8 @@ const Navbar = () => {
           {/* MENU DESKTOP - AU CENTRE */}
           <div className="hidden lg:flex flex-1 justify-center max-w-3xl mx-auto">
             <ul className="flex items-center gap-4 list-none m-0 p-0">
-              {mainMenuItems.map((item, i) => (
+              {/* Afficher les pages publiques uniquement si non-admin */}
+              {user?.role !== "admin" && mainMenuItems.map((item, i) => (
                 <li key={i}>
                   <Link
                     to={item.path}
@@ -333,23 +334,25 @@ const Navbar = () => {
         {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-slate-800 animate-slide-down">
-            {/* Menu principal mobile */}
-            <ul className="space-y-1 mb-4 list-none">
-              <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Navigation
-              </li>
-              {mainMenuItems.map((item, i) => (
-                <li key={i}>
-                  <Link
-                    to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
-                  >
-                    {item.title}
-                  </Link>
+            {/* Menu principal mobile - masqué pour admin */}
+            {user?.role !== "admin" && (
+              <ul className="space-y-1 mb-4 list-none">
+                <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Navigation
                 </li>
-              ))}
-            </ul>
+                {mainMenuItems.map((item, i) => (
+                  <li key={i}>
+                    <Link
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
+                    >
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {/* Sous-menu CLIENT mobile */}
             {isAuthenticated && user?.role === "client" && (
@@ -371,11 +374,11 @@ const Navbar = () => {
               </ul>
             )}
 
-            {/* Lien ADMIN mobile */}
+            {/* Menu ADMIN mobile */}
             {isAuthenticated && user?.role === "admin" && (
-              <ul className="space-y-1 mb-4 pt-4 border-t border-slate-800 list-none">
+              <ul className="space-y-1 mb-4 list-none">
                 <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Administration
+                  Mon Espace
                 </li>
                 {adminMenuItems.map((item, i) => (
                   <li key={i}>
@@ -388,6 +391,15 @@ const Navbar = () => {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <Link
+                    to="/admin/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 text-purple-300 hover:text-white hover:bg-purple-800/20 rounded-lg transition-all duration-300 font-bold"
+                  >
+                    ⚡ Dashboard Admin
+                  </Link>
+                </li>
               </ul>
             )}
 

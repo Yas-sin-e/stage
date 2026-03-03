@@ -6,8 +6,8 @@ const ChatAssistantFloat = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Cacher le bouton si on est déjà sur la page chat-ai ou si l'utilisateur n'est pas connecté
-  if (location.pathname === "/chat-ai" || !user) {
+  // Cacher le bouton si on est déjà sur la page chat-ai, si l'utilisateur n'est pas connecté, ou si c'est un admin
+  if (location.pathname === "/chat-ai" || !user || user.role === "admin") {
     return null;
   }
 

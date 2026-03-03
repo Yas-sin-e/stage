@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api/axios";
-import Swal from "sweetalert2";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
 
 const GestionReservations = () => {
   const navigate = useNavigate();
   const [reservations, setReservations] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const { toasts, showToast, removeToast } = useToast();
 
   useEffect(() => {
     fetchReservations();
@@ -28,45 +30,21 @@ const GestionReservations = () => {
     try {
       await api.put(`/admin/reservations/${id}/accept`);
       fetchReservations();
-      Swal.fire({
-        title: "Succès",
-        text: "Réservation acceptée",
-        icon: "success",
-        background: "#0f172a",
-        color: "#ffffff",
-        confirmButtonColor: "#10b981",
-      });
+      showToast('Réservation acceptée', 'success');
     } catch (error) {
-      Swal.fire({
-        title: "Erreur",
-        text: error.response?.data?.message || "Erreur",
-        icon: "error",
-        background: "#0f172a",
-        color: "#ffffff",
-        confirmButtonColor: "#dc2626",
-      });
+      showToast(error.response?.data?.message || 'Erreur', 'error');
     }
   };
 
   const handleReject = async (id) => {
-    const { value: reason } = await Swal.fire({
-      title: "Refuser la réservation",
-      input: "textarea",
-      inputLabel: "Raison du refus",
-      inputPlaceholder: "Écrivez la raison ici...",
-      showCancelButton: true,
-      confirmButtonText: "Confirmer",
-      cancelButtonText: "Annuler",
-      background: "#0f172a",
-      color: "#ffffff",
-      confirmButtonColor: "#dc2626",
-    });
+    const reason = prompt('Raison du refus:');
     if (reason) {
       try {
         await api.put(`/admin/reservations/${id}/reject`, { reason });
         fetchReservations();
+        showToast('Réservation refusée', 'success');
       } catch (error) {
-        alert("Erreur");
+        showToast('Erreur', 'error');
       }
     }
   };
@@ -259,6 +237,14 @@ const GestionReservations = () => {
           </div>
         </div>
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 };

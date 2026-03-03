@@ -34,7 +34,7 @@ import GestionServices from "./pages/admin/GestionServices";
 import GestionVehicules from "./pages/admin/GestionVehicules";
 
 // مكون حماية المسارات
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, clientOnly = false }) => {
   const { user, loading } = useAuth();
   if (loading)
     return (
@@ -45,20 +45,27 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== "admin")
     return <Navigate to="/dashboard" replace />;
+  if (clientOnly && user.role !== "client")
+    return <Navigate to="/admin/dashboard" replace />;
   return children;
 };
 
-// مكون المسارات العامة
-const PublicRoute = ({ children }) => {
+// مكون المسارات العامة - يمنع الأدمن من الوصول
+const PublicRoute = ({ children, blockAdmin = false }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user)
+  if (user) {
+    // إذا كان أدمن ومحاول الوصول لصفحة محظورة
+    if (blockAdmin && user.role === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
     return (
       <Navigate
         to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
         replace
       />
     );
+  }
   return children;
 };
 
@@ -74,10 +81,31 @@ function App() {
       {/* 2. محتوى الصفحات المتغير */}
       <main className="flex-grow">
         <Routes>
-          {/* المسارات العامة */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/services" element={<ServicesPage />} />
+          {/* المسارات العامة - محظورة للأدمن */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute blockAdmin>
+                <HomePage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <PublicRoute blockAdmin>
+                <AboutPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/services"
+            element={
+              <PublicRoute blockAdmin>
+                <ServicesPage />
+              </PublicRoute>
+            }
+          />
 
           {/* مسارات تسجيل الدخول */}
           <Route
@@ -114,7 +142,7 @@ function App() {
           <Route
             path="/chat-ai"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute clientOnly>
                 <ChatAIPage />
               </ProtectedRoute>
             }

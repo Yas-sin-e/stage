@@ -200,6 +200,7 @@ Coller ce code sur [planttext.com](https://www.planttext.com) pour générer le 
 
 ```plantuml
 @startuml UseCaseGlobal_AutoExpert_Final
+
 skinparam actorStyle awesome
 skinparam usecase {
   BackgroundColor #D6E4F7

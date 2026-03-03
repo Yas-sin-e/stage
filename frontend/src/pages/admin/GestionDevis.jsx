@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
-import toast from "react-hot-toast";
 import api from "../../services/api/axios";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
 
 const GestionDevis = () => {
   const location = useLocation();
@@ -13,6 +14,7 @@ const GestionDevis = () => {
   const [loading, setLoading] = useState(true);
   const [editingDevis, setEditingDevis] = useState(null);
   const [reservationData, setReservationData] = useState(null);
+  const { toasts, showToast, removeToast } = useToast();
 
   const { register, control, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -42,7 +44,7 @@ const GestionDevis = () => {
       return sum + (price * quantity);
     }, 0);
     setValue("amount", total.toString());
-    toast.success(`Montant calculé: ${total.toFixed(2)} TND`);
+    showToast(`Montant calculé: ${total.toFixed(2)} TND`, 'success');
   };
 
   useEffect(() => {
@@ -101,11 +103,11 @@ const GestionDevis = () => {
         
         // Ouvrir le modal
         setShowModal(true);
-        toast.success("Données de la réservation chargées");
+        showToast("Données de la réservation chargées", 'success');
       }
     } catch (error) {
       console.error("Erreur:", error);
-      toast.error("Erreur lors du chargement de la réservation");
+      showToast("Erreur lors du chargement de la réservation", 'error');
     }
   };
 
@@ -117,10 +119,10 @@ const GestionDevis = () => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce devis ?")) {
       try {
         await api.delete(`/admin/devis/${id}`);
-        toast.success("Devis supprimé avec succès");
+        showToast("Devis supprimé avec succès", 'success');
         fetchData();
       } catch (error) {
-        toast.error("Erreur lors de la suppression");
+        showToast("Erreur lors de la suppression", 'error');
       }
     }
   };
@@ -134,16 +136,17 @@ const GestionDevis = () => {
 
       if (editingDevis) {
         await api.put(`/admin/devis/${editingDevis._id}`, dataToSend);
-        toast.success("Devis modifié avec succès !");
+        showToast("Devis modifié avec succès !", 'success');
       } else {
         await api.post("/admin/devis", dataToSend);
-        toast.success("Devis créé avec succès !");
+        showToast("Devis créé avec succès !", 'success');
       }
       await fetchData();
       handleCloseModal();
     } catch (error) {
-      toast.error(
+      showToast(
         error.response?.data?.message || "Erreur lors de la sauvegarde",
+        'error'
       );
     }
   };
@@ -526,6 +529,14 @@ const GestionDevis = () => {
           </div>
         )}
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 };

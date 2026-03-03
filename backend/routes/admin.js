@@ -392,8 +392,11 @@ router.put('/services/:id', protect, adminOnly, async (req, res) => {
     const service = await Service.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
+    if (!service) {
+      return res.status(404).json({ message: 'Service non trouvé' });
+    }
     res.json(service);
   } catch (error) {
     res.status(500).json({ message: error.message });
