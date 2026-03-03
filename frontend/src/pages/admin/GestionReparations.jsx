@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import api from "../../services/api/axios";
 import Toast from "../../components/Toast";
 import { useToast } from "../../hooks/useToast";
+import ConfirmModal from "../../components/ConfirmModal";
+import { useConfirm } from "../../hooks/useConfirm";
 
 const GestionReparations = () => {
   const [reparations, setReparations] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const { toasts, showToast, removeToast } = useToast();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
 
   useEffect(() => {
     fetchReparations();
@@ -45,9 +48,11 @@ const GestionReparations = () => {
     }
   };
   const handleDeliver = async (id) => {
-    if (
-      window.confirm("Confirmer que le véhicule a été récupéré par le client ?")
-    ) {
+    const confirmed = await showConfirm(
+      "Confirmer que le véhicule a été récupéré par le client ?",
+      'info'
+    );
+    if (confirmed) {
       try {
         await api.put(`/admin/reparations/${id}/Livre`);
         fetchReparations();
@@ -299,6 +304,14 @@ const GestionReparations = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
+      {confirmState.isOpen && (
+        <ConfirmModal
+          message={confirmState.message}
+          type={confirmState.type}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   );
 };

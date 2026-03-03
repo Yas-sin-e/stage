@@ -4,6 +4,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import api from "../../services/api/axios";
 import Toast from "../../components/Toast";
 import { useToast } from "../../hooks/useToast";
+import ConfirmModal from "../../components/ConfirmModal";
+import { useConfirm } from "../../hooks/useConfirm";
 
 const GestionDevis = () => {
   const location = useLocation();
@@ -15,6 +17,7 @@ const GestionDevis = () => {
   const [editingDevis, setEditingDevis] = useState(null);
   const [reservationData, setReservationData] = useState(null);
   const { toasts, showToast, removeToast } = useToast();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const { register, control, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -116,7 +119,8 @@ const GestionDevis = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce devis ?")) {
+    const confirmed = await showConfirm("Êtes-vous sûr de vouloir supprimer ce devis ?", 'danger');
+    if (confirmed) {
       try {
         await api.delete(`/admin/devis/${id}`);
         showToast("Devis supprimé avec succès", 'success');
@@ -314,9 +318,12 @@ const GestionDevis = () => {
                           {d.status !== "accepted" && (
                             <button
                               onClick={() => handleDelete(d._id)}
-                              className="text-sm bg-red-600/20 px-3 py-1.5 rounded border border-red-500/50 text-red-500 hover:bg-red-600 hover:text-white transition-all"
+                              className="text-sm bg-red-600/20 px-4 py-2 rounded border border-red-500/50 text-red-400 hover:bg-red-600 hover:text-white transition-all flex items-center gap-2"
                             >
-                              🗑️
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              Supprimer
                             </button>
                           )}
                         </div>
@@ -537,6 +544,14 @@ const GestionDevis = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
+      {confirmState.isOpen && (
+        <ConfirmModal
+          message={confirmState.message}
+          type={confirmState.type}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   );
 };

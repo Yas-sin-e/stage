@@ -2,12 +2,18 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/auth";
 import api from "../../services/api/axios";
 import { useNavigate } from "react-router-dom";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
+import ConfirmModal from "../../components/ConfirmModal";
+import { useConfirm } from "../../hooks/useConfirm";
 
 const DevisPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [devis, setDevis] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { toasts, showToast, removeToast } = useToast();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
 
   useEffect(() => {
     fetchDevis();
@@ -28,10 +34,10 @@ const DevisPage = () => {
     if (window.confirm("Accepter ce devis ?")) {
       try {
         await api.put(`/devis/${id}/accept`);
-        alert("✓ Devis accepté ! Une réparation a été créée.");
+        showToast("Devis accepté ! Une réparation a été créée.", 'success');
         fetchDevis();
       } catch (error) {
-        alert(error.response?.data?.message || "Erreur");
+        showToast(error.response?.data?.message || "Erreur", 'error');
       }
     }
   };
@@ -40,10 +46,10 @@ const DevisPage = () => {
     if (window.confirm("Refuser ce devis ?")) {
       try {
         await api.put(`/devis/${id}/reject`);
-        alert("✕ Devis refusé");
+        showToast("Devis refusé", 'info');
         fetchDevis();
       } catch (error) {
-        alert("Erreur");
+        showToast("Erreur", 'error');
       }
     }
   };
@@ -306,6 +312,14 @@ const DevisPage = () => {
           </div>
         )}
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import api from "../../services/api/axios";
 import Toast from "../../components/Toast";
 import { useToast } from "../../hooks/useToast";
+import ConfirmModal from "../../components/ConfirmModal";
+import { useConfirm } from "../../hooks/useConfirm";
 
 const GestionServices = () => {
   const [services, setServices] = useState([]);
@@ -10,6 +12,7 @@ const GestionServices = () => {
   const [editingService, setEditingService] = useState(null);
   const [loading, setLoading] = useState(true);
   const { toasts, showToast, removeToast } = useToast();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const {
     register,
@@ -77,7 +80,8 @@ const GestionServices = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Supprimer ce service ?")) {
+    const confirmed = await showConfirm('Êtes-vous sûr de vouloir supprimer ce service ?', 'danger');
+    if (confirmed) {
       try {
         await api.delete(`/admin/services/${id}`);
         showToast('Service supprimé avec succès', 'success');
@@ -151,9 +155,12 @@ const GestionServices = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(service._id)}
-                    className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-all"
+                    className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-all border border-red-500/50"
+                    title="Supprimer"
                   >
-                    🗑
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -288,6 +295,14 @@ const GestionServices = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
+      {confirmState.isOpen && (
+        <ConfirmModal
+          message={confirmState.message}
+          type={confirmState.type}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   );
 };

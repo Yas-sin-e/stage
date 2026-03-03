@@ -42,16 +42,19 @@ router.delete('/clients/:id', protect, adminOnly, async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // 1. حذف جميع سيارات العميل
+    // 1. Supprimer tous les véhicules du client
     await Vehicle.deleteMany({ userId });
 
-    // 2. حذف جميع حجوزات العميل
+    // 2. Supprimer toutes les réservations du client
     await Reservation.deleteMany({ userId });
 
-    // 3. حذف جميع الـ Devis (اختياري حسب منطق عملك)
+    // 3. Supprimer tous les devis du client
     await Devis.deleteMany({ userId });
 
-    // 4. أخيراً حذف العميل نفسه
+    // 4. Supprimer toutes les réparations du client
+    await Reparation.deleteMany({ userId });
+
+    // 5. Supprimer le client
     const user = await User.findByIdAndDelete(userId);
 
     if (!user) return res.status(404).json({ message: 'Client non trouvé' });
@@ -77,32 +80,6 @@ router.put('/clients/:id', protect, adminOnly, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-// ============================================
-// GESTION VÉHICULES
-// ============================================
-
-router.get('/vehicles', protect, adminOnly, async (req, res) => {
-  try {
-    const vehicles = await Vehicle.find()
-      .populate('userId', 'name email phone')
-      .sort('-createdAt');
-    res.json(vehicles);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.delete('/vehicles/:id', protect, adminOnly, async (req, res) => {
-  try {
-    const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
-    if (!vehicle) return res.status(404).json({ message: 'Véhicule non trouvé' });
-
-    res.json({ message: 'Véhicule supprimé avec succès' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 // ============================================
 // GESTION RÉSERVATIONS
 // ============================================

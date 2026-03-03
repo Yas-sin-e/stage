@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api/axios";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
+import ConfirmModal from "../../components/ConfirmModal";
+import { useConfirm } from "../../hooks/useConfirm";
 
 const VehiclesPage = () => {
   const navigate = useNavigate();
@@ -9,6 +13,8 @@ const VehiclesPage = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
+  const { toasts, showToast, removeToast } = useToast();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const {
     register,
@@ -47,23 +53,27 @@ const VehiclesPage = () => {
     try {
       if (editingVehicle) {
         await api.put(`/vehicles/${editingVehicle._id}`, data);
+        showToast('Véhicule modifié avec succès', 'success');
       } else {
         await api.post("/vehicles", data);
+        showToast('Véhicule ajouté avec succès', 'success');
       }
       fetchVehicles();
       handleCloseModal();
     } catch (error) {
-      alert(error.response?.data?.message || "Erreur lors de la sauvegarde");
+      showToast(error.response?.data?.message || "Erreur lors de la sauvegarde", 'error');
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Supprimer ce véhicule ?")) {
+    const confirmed = await showConfirm("Supprimer ce véhicule ?", 'danger');
+    if (confirmed) {
       try {
         await api.delete(`/vehicles/${id}`);
         setVehicles(vehicles.filter((v) => v._id !== id));
+        showToast('Véhicule supprimé avec succès', 'success');
       } catch (error) {
-        alert("Erreur lors de la suppression");
+        showToast("Erreur lors de la suppression", 'error');
       }
     }
   };
@@ -214,11 +224,11 @@ const VehiclesPage = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(vehicle._id)}
-                          className="p-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-400 rounded-lg transition-all"
+                          className="p-2 bg-red-600/20 hover:bg-red-600 border border-red-500/50 text-red-400 hover:text-white rounded-lg transition-all group"
                           title="Supprimer"
                         >
                           <svg
-                            className="w-4 h-4"
+                            className="w-5 h-5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -483,6 +493,22 @@ const VehiclesPage = () => {
           </div>
         )}
       </div>
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+      {confirmState.isOpen && (
+        <ConfirmModal
+          message={confirmState.message}
+          type={confirmState.type}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   );
 };
