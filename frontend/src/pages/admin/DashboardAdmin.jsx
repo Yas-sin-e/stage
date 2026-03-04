@@ -49,11 +49,11 @@ const DashboardAdmin = () => {
       path: "/admin/clients",
     },
     {
-      title: "Véhicules",
+      title: "Réparations",
       value: stats.totalVehicules,
       icon: "🚗",
       color: "from-purple-600 to-pink-500",
-      path: "/admin/vehicles",
+      path: "/admin/reparations",
     },
     {
       title: "RDV en attente",

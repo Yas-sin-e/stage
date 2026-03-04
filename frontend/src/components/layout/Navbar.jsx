@@ -31,7 +31,7 @@ const Navbar = () => {
         setMobileMenuOpen(false);
         toast.success("Déconnecté avec succès");
       } catch (error) {
-        console.error("Erreur lors de la déconnexion", error);
+        console.error("Erreur lors de la déconnexion:", error);
       }
     }
   };
@@ -40,24 +40,23 @@ const Navbar = () => {
     { title: "Accueil", path: "/" },
     { title: "Services", path: "/services" },
     { title: "À propos", path: "/about" },
-  
   ];
 
   const clientSubmenuItems = [
     { title: "Dashboard", path: "/dashboard" },
     { title: "Mes Véhicules", path: "/my-vehicles" },
+    { title: "Mes Réparations", path: "/dashboard" },
     { title: "Mes Réservations", path: "/reservations" },
     { title: "Mes Devis", path: "/devis" },
-    { title: "New Réservations", path: "/reservations/new" },
+    { title: "Nouvelle Réservation", path: "/reservations/new" },
   ];
 
   const adminMenuItems = [
-    
     { title: "👥 Gestion Clients", path: "/admin/clients" },
     { title: "📅 Réservations", path: "/admin/reservations" },
+    { title: "🔧 Réparations", path: "/admin/reparations" },
     { title: "🛠️ Services", path: "/admin/services" },
     { title: "📑 Devis", path: "/admin/devis" },
-    { title: "🔧 Réparations", path: "/admin/reparations" },
   ];
 
   const currentMenu =
@@ -80,7 +79,6 @@ const Navbar = () => {
     <nav className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 backdrop-blur-lg border-b border-slate-800">
       <div className="w-full px-6">
         <div className="flex justify-between items-center h-20">
-          {/* LOGO - À GAUCHE */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
@@ -100,12 +98,9 @@ const Navbar = () => {
                   </svg>
                 </div>
                 {isAuthenticated && (
-                  <div
-                    className={`absolute -top-1 -right-1 w-4 h-4 ${user?.role === "admin" ? "bg-purple-500" : "bg-green-500"} rounded-full border-2 border-slate-900 animate-pulse`}
-                  ></div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-green-500 animate-pulse"></div>
                 )}
               </div>
-
               <div className="hidden md:block">
                 <div className="text-xl font-black tracking-tight">
                   Auto
@@ -124,26 +119,24 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* MENU DESKTOP - AU CENTRE */}
           <div className="hidden lg:flex flex-1 justify-center max-w-3xl mx-auto">
             <ul className="flex items-center gap-4 list-none m-0 p-0">
-              {/* Afficher les pages publiques uniquement si non-admin */}
-              {user?.role !== "admin" && mainMenuItems.map((item, i) => (
-                <li key={i}>
-                  <Link
-                    to={item.path}
-                    className="relative block px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50 group"
-                  >
-                    {item.title}
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-3/4 transition-all duration-300"></span>
-                  </Link>
-                </li>
-              ))}
+              {user?.role !== "admin" &&
+                mainMenuItems.map((item, i) => (
+                  <li key={i}>
+                    <Link
+                      to={item.path}
+                      className="relative block px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50 group"
+                    >
+                      {item.title}
+                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-3/4 transition-all duration-300"></span>
+                    </Link>
+                  </li>
+                ))}
 
               {isAuthenticated && (
                 <>
                   <li className="h-6 w-px bg-slate-700 mx-2"></li>
-
                   <li className="relative">
                     <button
                       onMouseEnter={() => setShowClientDropdown(true)}
@@ -151,7 +144,7 @@ const Navbar = () => {
                     >
                       Mon Espace
                       <svg
-                        className={`w-4 h-4 transition-transform ${showClientDropdown ? "rotate-180" : ""}`}
+                        className="w-4 h-4 transition-transform"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -164,7 +157,6 @@ const Navbar = () => {
                         />
                       </svg>
                     </button>
-
                     {showClientDropdown && (
                       <ul
                         className="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 list-none z-50"
@@ -185,7 +177,6 @@ const Navbar = () => {
                       </ul>
                     )}
                   </li>
-
                   {user?.role === "admin" && (
                     <>
                       <li className="h-6 w-px bg-slate-700 mx-2"></li>
@@ -205,15 +196,11 @@ const Navbar = () => {
             </ul>
           </div>
 
-          {/* USER ACTIONS - À DROITE */}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                {/* User Info (desktop only) */}
                 <div className="hidden xl:flex items-center gap-3 px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700">
-                  <div
-                    className={`w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br ${user?.role === "admin" ? "from-purple-500 to-pink-500" : "from-blue-500 to-purple-500"} flex items-center justify-center font-bold text-sm`}
-                  >
+                  <div className="w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center font-bold text-sm">
                     {user?.name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -221,15 +208,13 @@ const Navbar = () => {
                       {user?.role === "admin" ? "Administrateur" : "Client"}
                     </div>
                     <div
-                      className={`text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r ${user?.role === "admin" ? "from-purple-400 to-pink-400" : "from-blue-400 to-purple-400"} truncate max-w-[150px]`}
+                      className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 truncate max-w-[150px]"
                       title={user?.name}
                     >
                       {user?.name}
                     </div>
                   </div>
                 </div>
-
-                {/* Profile Button (Client only) */}
                 {user?.role === "client" && (
                   <Link
                     to="/profile"
@@ -251,8 +236,6 @@ const Navbar = () => {
                     </svg>
                   </Link>
                 )}
-
-                {/* Logout Button */}
                 <button
                   onClick={handleLogout}
                   className="px-5 py-2.5 bg-red-600/10 hover:bg-red-600 border border-red-600/50 hover:border-red-600 text-red-400 hover:text-white rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 group"
@@ -275,15 +258,12 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                {/* Login Button */}
                 <button
                   onClick={() => navigate("/login")}
                   className="hidden lg:block px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-300 border border-transparent hover:border-slate-700"
                 >
                   Connexion
                 </button>
-
-                {/* Register Button */}
                 <button
                   onClick={() => navigate("/register")}
                   className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50"
@@ -292,8 +272,6 @@ const Navbar = () => {
                 </button>
               </>
             )}
-
-            {/* MOBILE MENU BUTTON */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors ml-2"
@@ -331,10 +309,8 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-slate-800 animate-slide-down">
-            {/* Menu principal mobile - masqué pour admin */}
             {user?.role !== "admin" && (
               <ul className="space-y-1 mb-4 list-none">
                 <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -353,8 +329,6 @@ const Navbar = () => {
                 ))}
               </ul>
             )}
-
-            {/* Sous-menu CLIENT mobile */}
             {isAuthenticated && user?.role === "client" && (
               <ul className="space-y-1 mb-4 pt-4 border-t border-slate-800 list-none">
                 <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -373,8 +347,6 @@ const Navbar = () => {
                 ))}
               </ul>
             )}
-
-            {/* Menu ADMIN mobile */}
             {isAuthenticated && user?.role === "admin" && (
               <ul className="space-y-1 mb-4 list-none">
                 <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -402,31 +374,22 @@ const Navbar = () => {
                 </li>
               </ul>
             )}
-
-            {/* User Actions Mobile */}
             <div className="pt-4 border-t border-slate-800">
               {isAuthenticated ? (
                 <div className="space-y-3">
-                  {/* User Info */}
                   <div className="flex items-center gap-3 px-4 py-3 bg-slate-800/50 rounded-lg">
-                    <div
-                      className={`w-10 h-10 rounded-full bg-gradient-to-br ${user?.role === "admin" ? "from-purple-500 to-pink-500" : "from-blue-500 to-purple-500"} flex items-center justify-center font-bold`}
-                    >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center font-bold">
                       {user?.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="text-xs text-slate-400">
                         {user?.role === "admin" ? "Administrateur" : "Client"}
                       </div>
-                      <div
-                        className={`font-bold text-transparent bg-clip-text bg-gradient-to-r ${user?.role === "admin" ? "from-purple-400 to-pink-400" : "from-blue-400 to-purple-400"}`}
-                      >
+                      <div className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
                         {user?.name}
                       </div>
                     </div>
                   </div>
-
-                  {/* Profile Link (Client only) */}
                   {user?.role === "client" && (
                     <Link
                       to="/profile"
@@ -449,8 +412,6 @@ const Navbar = () => {
                       Mon profil
                     </Link>
                   )}
-
-                  {/* Logout Button */}
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all font-semibold"
@@ -473,7 +434,6 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {/* Login Button Mobile */}
                   <button
                     onClick={() => {
                       navigate("/login");
@@ -483,8 +443,6 @@ const Navbar = () => {
                   >
                     Connexion
                   </button>
-
-                  {/* Register Button Mobile */}
                   <button
                     onClick={() => {
                       navigate("/register");
@@ -500,8 +458,6 @@ const Navbar = () => {
           </div>
         )}
       </div>
-
-      {/* Gradient Separator */}
       <div className="h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
     </nav>
   );

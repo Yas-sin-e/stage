@@ -31,7 +31,6 @@ import GestionReservations from "./pages/admin/GestionReservations";
 import GestionDevis from "./pages/admin/GestionDevis";
 import GestionReparations from "./pages/admin/GestionReparations";
 import GestionServices from "./pages/admin/GestionServices";
-import GestionVehicules from "./pages/admin/GestionVehicules";
 
 // مكون حماية المسارات
 const ProtectedRoute = ({ children, adminOnly = false, clientOnly = false }) => {
@@ -234,14 +233,6 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <GestionServices />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/vehicles"
-            element={
-              <ProtectedRoute adminOnly>
-                <GestionVehicules />
               </ProtectedRoute>
             }
           />
