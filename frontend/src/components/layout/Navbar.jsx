@@ -36,16 +36,23 @@ const Navbar = () => {
     }
   };
 
+  // Menu principal - visible pour tous (connectés ou non)
   const mainMenuItems = [
     { title: "Accueil", path: "/" },
     { title: "Services", path: "/services" },
     { title: "À propos", path: "/about" },
   ];
 
+  // Pages accessibles même après connexion pour les clients
+  const publicPagesForClient = [
+    { title: "🏠 Accueil", path: "/" },
+    { title: "🔧 Services", path: "/services" },
+    { title: "ℹ️ À propos", path: "/about" },
+  ];
+
   const clientSubmenuItems = [
     { title: "Dashboard", path: "/dashboard" },
     { title: "Mes Véhicules", path: "/my-vehicles" },
-    { title: "Mes Réparations", path: "/dashboard" },
     { title: "Mes Réservations", path: "/reservations" },
     { title: "Mes Devis", path: "/devis" },
     { title: "Nouvelle Réservation", path: "/reservations/new" },
@@ -61,7 +68,6 @@ const Navbar = () => {
 
   const currentMenu =
     user?.role === "admin" ? adminMenuItems : clientSubmenuItems;
-
   if (isLoading) {
     return (
       <nav className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-2xl sticky top-0 z-50 backdrop-blur-lg border-b border-slate-800">
@@ -121,7 +127,22 @@ const Navbar = () => {
 
           <div className="hidden lg:flex flex-1 justify-center max-w-3xl mx-auto">
             <ul className="flex items-center gap-4 list-none m-0 p-0">
-              {user?.role !== "admin" &&
+              {/* Afficher les pages publiques seulement pour les clients et les non-connectés */}
+              {isAuthenticated &&
+                user?.role === "client" &&
+                mainMenuItems.map((item, i) => (
+                  <li key={i}>
+                    <Link
+                      to={item.path}
+                      className="relative block px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-300 rounded-lg hover:bg-slate-800/50 group"
+                    >
+                      {item.title}
+                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-3/4 transition-all duration-300"></span>
+                    </Link>
+                  </li>
+                ))}
+              {/* Afficher les pages publiques pour les non-connectés */}
+              {!isAuthenticated &&
                 mainMenuItems.map((item, i) => (
                   <li key={i}>
                     <Link
@@ -311,7 +332,8 @@ const Navbar = () => {
 
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-slate-800 animate-slide-down">
-            {user?.role !== "admin" && (
+            {/* Afficher les pages publiques seulement pour les non-connectés */}
+            {!isAuthenticated && (
               <ul className="space-y-1 mb-4 list-none">
                 <li className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Navigation
@@ -322,6 +344,25 @@ const Navbar = () => {
                       to={item.path}
                       onClick={() => setMobileMenuOpen(false)}
                       className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
+                    >
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {/* Pages publiques pour les clients connectés */}
+            {isAuthenticated && user?.role === "client" && (
+              <ul className="space-y-1 mb-4 pt-4 border-t border-slate-800 list-none">
+                <li className="px-4 py-2 text-xs font-bold text-blue-400 uppercase tracking-wider">
+                  Pages Publiques
+                </li>
+                {publicPagesForClient.map((item, i) => (
+                  <li key={i}>
+                    <Link
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-3 text-blue-300 hover:text-white hover:bg-blue-800/20 rounded-lg transition-all duration-300"
                     >
                       {item.title}
                     </Link>

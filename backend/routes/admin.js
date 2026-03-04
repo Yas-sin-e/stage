@@ -12,6 +12,21 @@ const { protect, adminOnly } = require('../middleware/adminMiddleware');
 // Appliquer les middlewares sur chaque route
 
 // ============================================
+// GESTION VÉHICULES (pour l'admin)
+// ============================================
+
+router.get('/vehicles', protect, adminOnly, async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find()
+      .populate('userId', 'name email phone')
+      .sort('-createdAt');
+    res.json(vehicles);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ============================================
 // GESTION CLIENTS
 // ============================================
 
@@ -100,7 +115,7 @@ router.get('/reservations', protect, adminOnly, async (req, res) => {
 router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id)
-      .populate('serviceId', 'name')
+      .populate('serviceId', 'name basePrice estimatedTime')
       .populate('vehicleId');
 
     if (!reservation) return res.status(404).json({ message: 'Réservation non trouvée' });
@@ -110,22 +125,37 @@ router.put('/reservations/:id/accept', protect, adminOnly, async (req, res) => {
 
     // Créer le devis après acceptation de la réservation
     const serviceLabel = reservation.customProblem || reservation.serviceId?.name || 'Service non spécifié';
+    
+    // Utiliser le prix de base du service comme estimation initiale
+    const estimatedAmount = reservation.serviceId?.basePrice || 0;
+    const estimatedTime = reservation.serviceId?.estimatedTime || '24h';
+    
+    // Calculer la date de fin estimée (par défaut +2 jours)
+    const dateFin = new Date(reservation.date);
+    dateFin.setDate(dateFin.getDate() + 2);
+
     const devis = await Devis.create({
       userId: reservation.userId,
       vehicleId: reservation.vehicleId,
-      serviceId: reservation.serviceId,
+      serviceId: reservation.serviceId?._id || null,
       serviceLabel,
-      amount: 0,
-      estimatedTime: '0h',
+      amount: estimatedAmount,
+      estimatedTime: estimatedTime,
       dateDebut: reservation.date,
-      dateFin: reservation.date,
+      dateFin: dateFin,
       status: 'pending',
       description: reservation.aiDiagnosis?.description || reservation.customProblem || reservation.notes || ''
     });
 
+    // Populate the created devis to return full details
+    const populatedDevis = await Devis.findById(devis._id)
+      .populate('userId', 'name email phone')
+      .populate('vehicleId', 'brand model plate')
+      .populate('serviceId', 'name category');
+
     res.json({
       reservation,
-      devis,
+      devis: populatedDevis,
       message: 'Réservation acceptée et devis créé avec succès'
     });
   } catch (error) {

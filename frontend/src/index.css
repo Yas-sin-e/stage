@@ -17,50 +17,49 @@
   animation: slide-in 0.3s ease-out;
 }
 
-/* Augmentation de la taille de police globale */
+/* Réduction de la taille de police globale */
 html {
-  font-size: 18px; /* Augmenté de 16px à 18px */
+  font-size: 16px; /* Réduit de 18px à 16px */
 }
-
 body {
   font-size: 1rem;
   line-height: 1.6;
 }
 
-/* Titres plus grands */
+/* Titres */
 h1 {
-  font-size: 3rem;
-}
-
-h2 {
   font-size: 2.25rem;
 }
 
-h3 {
-  font-size: 1.75rem;
+h2 {
+  font-size: 1.875rem;
 }
 
-h4 {
+h3 {
   font-size: 1.5rem;
 }
 
-h5 {
+h4 {
   font-size: 1.25rem;
 }
 
-h6 {
+h5 {
   font-size: 1.125rem;
 }
 
-/* Paragraphes plus grands */
+h6 {
+  font-size: 1rem;
+}
+
+/* Paragraphes */
 p {
-  font-size: 1.1rem;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 /* Liens */
 a {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 /* Boutons */

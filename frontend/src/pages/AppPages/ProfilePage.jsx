@@ -9,9 +9,9 @@ const ProfilePage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // تحديد الـ Theme بناءً على الرول
+  // تحديد الـ Theme بناءً على الرول - Bleu par défaut pour l'admin
   const isAdmin = user?.role === "admin";
-  const themeColor = isAdmin ? "purple" : "blue";
+  const themeColor = isAdmin ? "blue" : "blue";
 
   const {
     register,
@@ -142,9 +142,12 @@ const ProfilePage = () => {
                       {user?.email}
                     </div>
                   </div>
+                  {/* Bouton Modifier - Bleu pour l'admin */}
                   <button
                     onClick={() => setIsEditing(true)}
-                    className={`w-full py-4 bg-${themeColor}-600 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all`}
+                    className={`w-full py-4 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all ${
+                      isAdmin ? "bg-blue-600" : "bg-blue-600"
+                    }`}
                   >
                     ✎ Modifier le profil
                   </button>
@@ -230,7 +233,7 @@ const ProfilePage = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`flex-1 py-4 bg-${themeColor}-600 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all`}
+                      className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:opacity-90 transition-all"
                     >
                       {loading ? "Sauvegarde..." : "Enregistrer"}
                     </button>
@@ -326,7 +329,7 @@ const ProfilePage = () => {
               <div className="flex gap-2 pt-4">
                 <button
                   type="submit"
-                  className={`flex-1 py-4 bg-${themeColor}-600 text-white rounded-xl font-bold`}
+                  className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold"
                 >
                   Confirmer
                 </button>

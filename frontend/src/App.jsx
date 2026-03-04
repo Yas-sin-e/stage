@@ -33,7 +33,11 @@ import GestionReparations from "./pages/admin/GestionReparations";
 import GestionServices from "./pages/admin/GestionServices";
 
 // مكون حماية المسارات
-const ProtectedRoute = ({ children, adminOnly = false, clientOnly = false }) => {
+const ProtectedRoute = ({
+  children,
+  adminOnly = false,
+  clientOnly = false,
+}) => {
   const { user, loading } = useAuth();
   if (loading)
     return (
@@ -49,7 +53,7 @@ const ProtectedRoute = ({ children, adminOnly = false, clientOnly = false }) => 
   return children;
 };
 
-// مكون المسارات العامة - يمنع الأدمن من الوصول
+// composant المسارات العامة - يمنع الأدمن من الوصول للصفحات العامة
 const PublicRoute = ({ children, blockAdmin = false }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -58,12 +62,9 @@ const PublicRoute = ({ children, blockAdmin = false }) => {
     if (blockAdmin && user.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     }
-    return (
-      <Navigate
-        to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
-        replace
-      />
-    );
+    // السماح للعميل بالوصول للصفحات العامة (Accueil, Services, About)
+    // Ne pas rediriger - permettre l'accès aux pages publiques
+    return children;
   }
   return children;
 };
