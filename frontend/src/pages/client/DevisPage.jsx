@@ -13,7 +13,8 @@ const DevisPage = () => {
   const [devis, setDevis] = useState([]);
   const [loading, setLoading] = useState(true);
   const { toasts, showToast, removeToast } = useToast();
-  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } =
+    useConfirm();
 
   useEffect(() => {
     fetchDevis();
@@ -34,10 +35,10 @@ const DevisPage = () => {
     if (window.confirm("Accepter ce devis ?")) {
       try {
         await api.put(`/devis/${id}/accept`);
-        showToast("Devis accepté ! Une réparation a été créée.", 'success');
+        showToast("Devis accepté ! Une réparation a été créée.", "success");
         fetchDevis();
       } catch (error) {
-        showToast(error.response?.data?.message || "Erreur", 'error');
+        showToast(error.response?.data?.message || "Erreur", "error");
       }
     }
   };
@@ -46,10 +47,10 @@ const DevisPage = () => {
     if (window.confirm("Refuser ce devis ?")) {
       try {
         await api.put(`/devis/${id}/reject`);
-        showToast("Devis refusé", 'info');
+        showToast("Devis refusé", "info");
         fetchDevis();
       } catch (error) {
-        showToast("Erreur", 'error');
+        showToast("Erreur", "error");
       }
     }
   };
@@ -260,22 +261,6 @@ const DevisPage = () => {
                     </div>
                   </div>
 
-                  {/* Status-specific message */}
-                  {d.status === "accepted" && (
-                    <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-                      <p className="text-green-400 text-base">
-                        ✓ Votre devis a été accepté. Vous pouvez maintenant
-                        prendre rendez-vous pour effectuer les réparations.
-                      </p>
-                      <button
-                        onClick={() => navigate("/reservations/new")}
-                        className="mt-3 px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold transition-all"
-                      >
-                        Prendre rendez-vous
-                      </button>
-                    </div>
-                  )}
-
                   {d.status === "rejected" && (
                     <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
                       <p className="text-red-400 text-base">
@@ -312,7 +297,7 @@ const DevisPage = () => {
           </div>
         )}
       </div>
-      {toasts.map(toast => (
+      {toasts.map((toast) => (
         <Toast
           key={toast.id}
           message={toast.message}
