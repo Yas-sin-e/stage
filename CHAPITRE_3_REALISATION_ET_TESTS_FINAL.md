@@ -368,7 +368,7 @@ Le troisième sprint introduit les fonctionnalités différenciatrices : le syst
 | **US-6** | En tant qu'Admin, je veux faire évoluer le statut d'une réparation pour informer le client. | Développer le système de statuts (En cours → Terminée → Livrée) et notes techniques. | Haute — 2 pts |
 | **US-6b** | En tant que Client, je veux consulter l'état de mes réparations et confirmer récupération. | Implémenter la vue client avec timeline de statut et confirmation. | Haute — 2 pts |
 | **US-7** | En tant qu'Admin, je veux visualiser les statistiques globales du garage. | Programmer les agrégations MongoDB et intégrer les graphiques (KPI, revenus, activité). | Moyenne — 3 pts |
-| **US-8** | En tant que Client, je veux dialoguer avec une IA pour obtenir un pré-diagnostic. | Connecter le backend à Ollama llama3.1 et développer l'interface Chat IA. | Moyenne — 3 pts |
+| **US-8** | En tant que Client, je veux dialoguer avec une IA pour obtenir un pré-diagnostic. | Connecter le backend à Ollama llama3.1 et développer l'interface Chat IA. | Difficile — 5 pts |
 | | | **TOTAL** | **10 pts** |
 
 ### 3.2 Descriptions des Cas d'Utilisation — Sprint 3
