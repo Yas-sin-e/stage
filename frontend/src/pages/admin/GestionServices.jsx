@@ -12,7 +12,8 @@ const GestionServices = () => {
   const [editingService, setEditingService] = useState(null);
   const [loading, setLoading] = useState(true);
   const { toasts, showToast, removeToast } = useToast();
-  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } =
+    useConfirm();
 
   const {
     register,
@@ -47,17 +48,18 @@ const GestionServices = () => {
     try {
       if (editingService) {
         await api.put(`/admin/services/${editingService._id}`, data);
-        showToast('Service mis à jour avec succès', 'success');
+        showToast("Service mis à jour avec succès", "success");
       } else {
         await api.post("/admin/services", data);
-        showToast('Service créé avec succès', 'success');
+        showToast("Service créé avec succès", "success");
       }
       fetchServices();
       handleCloseModal();
     } catch (error) {
-      console.error('Erreur:', error);
-      const message = error.response?.data?.message || 'Erreur lors de la sauvegarde';
-      showToast(message, 'error');
+      console.error("Erreur:", error);
+      const message =
+        error.response?.data?.message || "Erreur lors de la sauvegarde";
+      showToast(message, "error");
     }
   };
 
@@ -80,16 +82,59 @@ const GestionServices = () => {
   };
 
   const handleDelete = async (id) => {
-    const confirmed = await showConfirm('Êtes-vous sûr de vouloir supprimer ce service ?', 'danger');
+    const service = services.find((s) => s._id === id);
+    const confirmed = await showConfirm(
+      `${service.isActive ? "Archiver ou supprimer" : "Êtes-vous sûr de vouloir supprimer"} ce service ?`,
+      "danger",
+    );
     if (confirmed) {
       try {
         await api.delete(`/admin/services/${id}`);
-        showToast('Service supprimé avec succès', 'success');
+        showToast("Service supprimé/archivé avec succès", "success");
         fetchServices();
       } catch (error) {
-        console.error('Erreur:', error);
-        const message = error.response?.data?.message || 'Erreur lors de la suppression';
-        showToast(message, 'error');
+        console.error("Erreur:", error);
+        const message =
+          error.response?.data?.message || "Erreur lors de la suppression";
+        showToast(message, "error");
+      }
+    }
+  };
+
+  const handleArchive = async (id) => {
+    const confirmed = await showConfirm(
+      "Êtes-vous sûr de vouloir archiver ce service ?",
+      "warning",
+    );
+    if (confirmed) {
+      try {
+        await api.put(`/admin/services/${id}/archive`);
+        showToast("Service archivé avec succès", "success");
+        fetchServices();
+      } catch (error) {
+        console.error("Erreur:", error);
+        const message =
+          error.response?.data?.message || "Erreur lors de l'archivage";
+        showToast(message, "error");
+      }
+    }
+  };
+
+  const handleReactivate = async (id) => {
+    const confirmed = await showConfirm(
+      "Êtes-vous sûr de vouloir réactiver ce service ?",
+      "info",
+    );
+    if (confirmed) {
+      try {
+        await api.put(`/admin/services/${id}/reactivate`);
+        showToast("Service réactivé avec succès", "success");
+        fetchServices();
+      } catch (error) {
+        console.error("Erreur:", error);
+        const message =
+          error.response?.data?.message || "Erreur lors de la réactivation";
+        showToast(message, "error");
       }
     }
   };
@@ -138,30 +183,77 @@ const GestionServices = () => {
           {services.map((service) => (
             <div
               key={service._id}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6 hover:border-blue-500/50 transition-all"
+              className={`rounded-2xl p-6 hover:border-blue-500/50 transition-all backdrop-blur-sm border ${
+                service.isActive
+                  ? "bg-slate-800/50 border-slate-700"
+                  : "bg-slate-800/30 border-slate-600 opacity-75"
+              }`}
             >
               <div className="flex justify-between mb-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r ${getCategoryColor(service.category)}`}
-                >
-                  {service.category}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r ${getCategoryColor(
+                      service.category,
+                    )}`}
+                  >
+                    {service.category}
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-bold ${
+                      service.isActive
+                        ? "bg-green-600/30 text-green-400 border border-green-500/50"
+                        : "bg-amber-600/30 text-amber-400 border border-amber-500/50"
+                    }`}
+                  >
+                    {service.isActive ? "✓ Actif" : "⊘ Archivé"}
+                  </span>
+                </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(service)}
                     className="p-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"
+                    title="Modifier"
                   >
                     ✎
                   </button>
-                  <button
-                    onClick={() => handleDelete(service._id)}
-                    className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-all border border-red-500/50"
-                    title="Supprimer"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  {service.isActive ? (
+                    <>
+                      <button
+                        onClick={() => handleArchive(service._id)}
+                        className="p-2 bg-amber-600/20 text-amber-400 rounded-lg hover:bg-amber-600 hover:text-white transition-all border border-amber-500/50"
+                        title="Archiver ce service"
+                      >
+                        📦
+                      </button>
+                      <button
+                        onClick={() => handleDelete(service._id)}
+                        className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-all border border-red-500/50"
+                        title="Supprimer"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => handleReactivate(service._id)}
+                      className="p-2 bg-green-600/20 text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition-all border border-green-500/50"
+                      title="Réactiver ce service"
+                    >
+                      ✓
+                    </button>
+                  )}
                 </div>
               </div>
               <h3 className="text-xl font-bold mb-2">{service.name}</h3>
@@ -287,7 +379,7 @@ const GestionServices = () => {
           </div>
         )}
       </div>
-      {toasts.map(toast => (
+      {toasts.map((toast) => (
         <Toast
           key={toast.id}
           message={toast.message}

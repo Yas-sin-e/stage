@@ -180,7 +180,14 @@ Le Sprint 1 livre 9 interfaces principales :
 #### 8. Gestion des Services (Admin)
 - Catalogue en cartes : nom, catégorie (badge coloré), prix, durée
 - Création via formulaire modal
-- Modification et archivage pour chaque service
+- Modification et édition pour chaque service
+- **Statut visuel** : badge « Actif » (vert) ou « Archivé » (orange)
+- **Archivage intelligent** : 
+  - Bouton 📦 (Archive) pour archiver les services actifs
+  - Si des réservations actives existent → archivage automatique (au lieu de suppression)
+  - Bouton ✓ (Réactiver) visible pour les services archivés
+- **Suppression** : possible uniquement si aucune réservation active n'est liée
+- Codes couleurs pour l'état : vert actif, gris archivé
 
 #### 9. Gestion des Clients (Admin)
 - Tableau paginé : nom, email, téléphone, date d'inscription, statut
@@ -521,7 +528,7 @@ Le troisième sprint introduit les fonctionnalités différenciatrices : le syst
 
 La phase de tests valide la conformité de la plateforme AutoExpert aux exigences définies. Trois types de tests ont été réalisés :
 
-### 5.1 Tests Fonctionnels (15 cas)
+### 5.1 Tests Fonctionnels (17 cas)
 
 | ID | Cas de test | Données d'entrée | Résultat attendu | Statut |
 |---|---|---|---|---|
@@ -540,6 +547,8 @@ La phase de tests valide la conformité de la plateforme AutoExpert aux exigence
 | **TF-13** | Acceptation devis par client | Devis en attente | Réparation créée automatiquement (statut « En cours ») | ✅ |
 | **TF-14** | Chat IA — symptôme automobile | Description de panne véhicule | Pré-diagnostic retourné (~8 s) | ✅ |
 | **TF-15** | Évolution statut réparation | En cours → Terminée | Statut mis à jour en base, visible par client | ✅ |
+| **TF-16** | Archivage service avec réservations actives | Suppression d'un service lié à une réservation pending | Service archivé au lieu de supprimé — isActive = false | ✅ |
+| **TF-17** | Suppression service sans réservations | Suppression d'un service sans références | Service supprimé complètement de la base | ✅ |
 
 ### 5.2 Tests de Sécurité (6 cas)
 
@@ -601,7 +610,7 @@ L'architecture **MERN** (MongoDB, Express, React, Node.js) a offert un cadre :
 
 ### Résultats de validation
 
-- ✅ **15 tests fonctionnels** : 100% réussite
+- ✅ **17 tests fonctionnels** : 100% réussite
 - ✅ **6 tests sécurité** : 100% réussite
 - ✅ **6 mesures performance** : cibles atteintes
 - ✅ **41/41 points planifiés** : taux de complétion 100%

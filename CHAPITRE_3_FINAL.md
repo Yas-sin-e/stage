@@ -96,47 +96,86 @@ flowchart LR
 
 _(Figure 3.0 : Use Case Global — Sprint 1)_
 
-**● Use Case Raffiné — Vue Détaillée par Acteur**
-Ce diagramme détaille chaque cas global en actions concrètes par acteur (Visiteur, Client, Admin, et Nodemailer).
+**● Use Case Raffiné 1 — Actions du Visiteur et du Client**
+Ce diagramme détaille les actions réalisables par un utilisateur standard (non connecté ou connecté avec le rôle client).
 
 ```mermaid
 flowchart LR
     %% Acteurs
     V(("👤 Visiteur"))
     C(("👤 Client authentifié"))
-    A(("🛠️ Administrateur"))
-    MAIL(("📧 Nodemailer"))
+    MAIL(("📧 Serveur Mail (Nodemailer)"))
 
     %% Cas d'utilisation
-    subgraph Sprint 1 - Authentification & Base
+    subgraph Espace Client
         UC_REG([S'inscrire])
         UC_LOG([Se connecter])
-        UC_JWT([Vérifier JWT])
-        UC_RESET([Réinitialiser MDP])
-        UC_EMAIL([Envoyer email sécurisé])
+        UC_JWT([Vérifier Token JWT])
+        UC_RESET([Réinitialiser Mot de Passe])
+        UC_EMAIL([Envoyer lien sécurisé])
+
         UC_PROFIL([Gérer son profil])
-        UC_CLIENTS([Gérer les clients])
-        UC_SERV([Gérer les services])
+        UC_MOD_INFO([Modifier ses informations])
+        UC_UPD_MDP([Changer son mot de passe])
     end
 
-    %% Relations Acteurs -> Cas
+    %% Relations
     V --> UC_REG
     V --> UC_LOG
+
     C --> UC_LOG
     C --> UC_PROFIL
     C --> UC_RESET
-    A --> UC_LOG
-    A --> UC_CLIENTS
-    A --> UC_SERV
+
     UC_EMAIL --> MAIL
 
-    %% Relations Include/Extend
+    %% Includes & Extends
     UC_LOG -. "<< include >>" .-> UC_JWT
     UC_RESET -. "<< include >>" .-> UC_EMAIL
     UC_RESET -. "<< extend (si oublié) >>" .-> UC_LOG
+
+    UC_MOD_INFO -. "<< extend >>" .-> UC_PROFIL
+    UC_UPD_MDP -. "<< extend >>" .-> UC_PROFIL
 ```
 
-_(Figure 3.1 : Use Case Raffiné — Sprint 1)_
+_(Figure 3.1a : Use Case Raffiné — Parcours Visiteur/Client)_
+
+**● Use Case Raffiné 2 — Actions de l'Administrateur**
+Ce diagramme détaille les privilèges exclusifs du garagiste/administrateur.
+
+```mermaid
+flowchart LR
+    A(("🛠️ Administrateur"))
+
+    subgraph Espace Admin
+        UC_LOG([Se connecter])
+        UC_JWT([Vérifier Token JWT])
+
+        UC_CLIENTS([Gérer les comptes clients])
+        UC_SUSP_C([Suspendre un compte client])
+        UC_DEL_C([Supprimer un compte client])
+
+        UC_SERV([Gérer le catalogue des services])
+        UC_ADD_S([Ajouter un service])
+        UC_MOD_S([Modifier un service])
+        UC_DEL_S([Archiver un service])
+    end
+
+    A --> UC_LOG
+    A --> UC_CLIENTS
+    A --> UC_SERV
+
+    UC_LOG -. "<< include >>" .-> UC_JWT
+
+    UC_SUSP_C -. "<< extend >>" .-> UC_CLIENTS
+    UC_DEL_C -. "<< extend >>" .-> UC_CLIENTS
+
+    UC_ADD_S -. "<< extend >>" .-> UC_SERV
+    UC_MOD_S -. "<< extend >>" .-> UC_SERV
+    UC_DEL_S -. "<< extend >>" .-> UC_SERV
+```
+
+_(Figure 3.1b : Use Case Raffiné — Parcours Administrateur)_
 
 ---
 
@@ -353,46 +392,68 @@ flowchart LR
 
 _(Figure 3.15 : Use Case Global — Sprint 2)_
 
-**● Use Case Raffiné — Sprint 2**
+**● Use Case Raffiné 1 — Actions du Client (Gestion Véhicules & Prise de RDV)**
+Ce diagramme illustre les opérations côté client pour gérer son parc et planifier une intervention.
 
 ```mermaid
 flowchart LR
     C(("👤 Client authentifié"))
-    A(("🛠️ Administrateur"))
 
-    subgraph Sprint 2 - Opérationnel
+    subgraph Interface Client
+        UC_GERER_V([Gérer ses véhicules])
         UC_AV([Ajouter un véhicule])
-        UC_MV([Modifier/Supprimer véhicule])
-        UC_LV([Consulter mes véhicules])
+        UC_MOD_V([Modifier un véhicule])
+        UC_DEL_V([Supprimer un véhicule])
+        UC_LV([Consulter la liste de ses véhicules])
 
-        UC_CR([Créer une réservation])
-        UC_SV([Sélectionner un véhicule])
-        UC_SS([Choisir un service libre])
-        UC_AR([Annuler réservation])
-
-        UC_DEM([Consulter demandes Admin])
-        UC_VAL([Accepter / Refuser RDV])
-        UC_DV([Créer un devis])
-        UC_IT([Détailler items & prix])
+        UC_CR([Créer une demande de réservation])
+        UC_SV([Sélectionner un véhicule enregistré])
+        UC_SS([Choisir un service])
+        UC_AR([Annuler sa réservation])
     end
 
-    C --> UC_AV
-    C --> UC_MV
-    C --> UC_LV
+    C --> UC_GERER_V
     C --> UC_CR
     C --> UC_AR
 
-    A --> UC_DEM
-    A --> UC_VAL
-    A --> UC_DV
+    UC_AV -. "<< extend >>" .-> UC_GERER_V
+    UC_MOD_V -. "<< extend >>" .-> UC_GERER_V
+    UC_DEL_V -. "<< extend >>" .-> UC_GERER_V
+    UC_LV -. "<< extend >>" .-> UC_GERER_V
 
     UC_CR -. "<< include >>" .-> UC_SV
     UC_CR -. "<< include >>" .-> UC_SS
-    UC_DV -. "<< include >>" .-> UC_IT
-    UC_VAL -. "<< extend (si accepté) >>" .-> UC_DV
 ```
 
-_(Figure 3.16 : Use Case Raffiné — Sprint 2)_
+_(Figure 3.16a : Use Case Raffiné — Opérations Client Sprint 2)_
+
+**● Use Case Raffiné 2 — Actions de l'Administrateur (Gestion Planning & Devis)**
+Ce diagramme illustre comment le garagiste traite les demandes et chiffre les interventions.
+
+```mermaid
+flowchart LR
+    A(("🛠️ Administrateur"))
+
+    subgraph Interface Garage
+        UC_DEM([Gérer les demandes clients])
+        UC_VAL([Accepter un RDV])
+        UC_REF([Refuser un RDV])
+
+        UC_DV([Créer un devis chiffré])
+        UC_IT([Détailler pièces et main d'œuvre])
+    end
+
+    A --> UC_DEM
+    A --> UC_DV
+
+    UC_VAL -. "<< extend >>" .-> UC_DEM
+    UC_REF -. "<< extend >>" .-> UC_DEM
+
+    UC_DV -. "<< include >>" .-> UC_IT
+    UC_DV -. "<< extend (si RDV accepté) >>" .-> UC_VAL
+```
+
+_(Figure 3.16b : Use Case Raffiné — Opérations Administrateur Sprint 2)_
 
 ### 2.3 Descriptions des Cas d'Utilisation — Sprint 2
 
@@ -537,7 +598,7 @@ Le dernier sprint introduit les modules de suivi des travaux en atelier, les sta
 | **US-6**  | En tant qu'Admin, je veux faire évoluer le statut d'une réparation. | Coder les transitions et notes techniques.                          | Haute — 2 pts     |
 | **US-6b** | En tant que Client, je veux consulter l'état de mes réparations.    | Vue timeline animée et bouton transfert.                            | Haute — 2 pts     |
 | **US-7**  | En tant qu'Admin, je veux voir les statistiques globales.           | Agrégations MongoDB et graphiques responsives Recharts.             | Facile — 1 pt     |
-| **US-8**  | En tant que Client, je veux dialoguer avec l'IA.                    | Connexion d'un LLM local (Ollama) à l'App React de prise en charge. | Difficile — 5 pts |
+| **US-8**  | En tant qu'Client, je veux dialoguer avec l'IA.                     | Connexion d'un LLM local (Ollama) à l'App React de prise en charge. | Difficile — 5 pts |
 |           |                                                                     | **TOTAL**                                                           | **10 pts**        |
 
 _Tableau 3.7 : Sprint Backlog 3 — 10 points_
@@ -566,49 +627,69 @@ flowchart LR
 
 _(Figure 3.25 : Use Case Global — Sprint 3)_
 
-**● Use Case Raffiné — Sprint 3**
+**● Use Case Raffiné 1 — Actions du Client (IA, Validation & Suivi)**
+Ce diagramme modélise l'interaction du client avec l'Assistant IA, l'acceptation de son devis, et le suivi de son véhicule en atelier.
 
 ```mermaid
 flowchart LR
     C(("👤 Client authentifié"))
-    A(("🛠️ Administrateur"))
-    IA(("🤖 Ollama (llama3.1)"))
+    IA(("🤖 Moteur IA Local (Ollama - llama3.1)"))
 
-    subgraph Sprint 3 - Suivi & Intelligence
-        UC_DV([Accepter/Refuser le devis])
-        UC_INIT([Initialisation réparation autom.])
-        UC_SUIV([Suivre ma réparation])
+    subgraph Parcours Client Avancé
+        UC_CHAT([Discuter avec le Chat IA])
+        UC_ANA([Analyser les symptômes])
+        UC_DIAG([Générer un pré-diagnostic structuré])
 
-        UC_REP([Gérer réparations Admin])
-        UC_STAT([Mettre à jour statut])
-        UC_NOT([Ajouter notes tech])
+        UC_GERER_DV([Gérer le devis])
+        UC_ACC_DV([Accepter le devis])
+        UC_REF_DV([Refuser le devis])
+        UC_INIT([Création automatique de Réparation])
 
-        UC_DASH([Consulter Dashboard])
-        UC_STATS([Voir statistiques chiffrées])
-
-        UC_CHAT([Chat IA Automobile])
-        UC_ANA([Analyser symptômes])
-        UC_DIAG([Générer pré-diagnostic])
+        UC_SUIV([Suivre l'état de sa réparation sur Timeline])
     end
 
-    C --> UC_DV
-    C --> UC_SUIV
     C --> UC_CHAT
+    C --> UC_GERER_DV
+    C --> UC_SUIV
+
+    UC_ANA --> IA
+
+    UC_CHAT -. "<< include >>" .-> UC_ANA
+    UC_ANA -. "<< include >>" .-> UC_DIAG
+
+    UC_ACC_DV -. "<< extend >>" .-> UC_GERER_DV
+    UC_REF_DV -. "<< extend >>" .-> UC_GERER_DV
+
+    UC_INIT -. "<< extend (si accepté) >>" .-> UC_ACC_DV
+```
+
+_(Figure 3.26a : Use Case Raffiné — Opérations Client & IA Sprint 3)_
+
+**● Use Case Raffiné 2 — Actions de l'Administrateur (Atelier & Analytics)**
+Ce diagramme montre comment le garagiste pilote l'atelier et analyse les performances financières du garage.
+
+```mermaid
+flowchart LR
+    A(("🛠️ Administrateur"))
+
+    subgraph Supervision Garage
+        UC_REP([Gérer les réparations en cours])
+        UC_STAT([Mettre à jour le statut])
+        UC_NOT([Ajouter des notes techniques])
+
+        UC_DASH([Consulter le Dashboard Analytique])
+        UC_STATS([Calcul automatisé des statistiques])
+    end
 
     A --> UC_REP
     A --> UC_DASH
 
-    UC_ANA --> IA
-
-    UC_DV -. "<< include (si accepté) >>" .-> UC_INIT
-    UC_REP -. "<< include >>" .-> UC_STAT
-    UC_REP -. "<< extend >>" .-> UC_NOT
+    UC_STAT -. "<< extend >>" .-> UC_REP
+    UC_NOT -. "<< extend >>" .-> UC_REP
     UC_DASH -. "<< include >>" .-> UC_STATS
-    UC_CHAT -. "<< include >>" .-> UC_ANA
-    UC_ANA -. "<< include >>" .-> UC_DIAG
 ```
 
-_(Figure 3.26 : Use Case Raffiné — Sprint 3)_
+_(Figure 3.26b : Use Case Raffiné — Opérations Administrateur Sprint 3)_
 
 ### 3.3 Descriptions des Cas d'Utilisation — Sprint 3
 

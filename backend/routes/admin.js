@@ -410,10 +410,79 @@ router.put('/services/:id', protect, adminOnly, async (req, res) => {
   }
 });
 
+// Archive ou supprime un service
+// Si des réservations actives existent → Archivage
+// Sinon → Suppression complète
 router.delete('/services/:id', protect, adminOnly, async (req, res) => {
   try {
-    await Service.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Service supprimé' });
+    const serviceId = req.params.id;
+
+    // 1. Vérifier s'il y a des réservations actives avec ce service
+    const activeReservations = await Reservation.findOne({
+      serviceId: serviceId,
+      status: { $in: ['pending', 'accepted'] }
+    });
+
+    if (activeReservations) {
+      // 2. Si oui → Archiver au lieu de supprimer
+      const service = await Service.findByIdAndUpdate(
+        serviceId,
+        { isActive: false },
+        { new: true }
+      );
+      return res.json({
+        message: 'Service archivé (réservations actives détectées)',
+        service,
+        archived: true
+      });
+    }
+
+    // 3. Si non → Supprimer complètement
+    await Service.findByIdAndDelete(serviceId);
+    res.json({ 
+      message: 'Service supprimé complètement',
+      deleted: true 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route spécifique pour archiver un service (sans le supprimer)
+router.put('/services/:id/archive', protect, adminOnly, async (req, res) => {
+  try {
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true }
+    );
+    if (!service) {
+      return res.status(404).json({ message: 'Service non trouvé' });
+    }
+    res.json({ 
+      message: 'Service archivé avec succès',
+      service 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route pour réactiver un service archivé
+router.put('/services/:id/reactivate', protect, adminOnly, async (req, res) => {
+  try {
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      { isActive: true },
+      { new: true }
+    );
+    if (!service) {
+      return res.status(404).json({ message: 'Service non trouvé' });
+    }
+    res.json({ 
+      message: 'Service réactivé avec succès',
+      service 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
