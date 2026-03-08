@@ -1,785 +1,614 @@
-# Chapitre 3 : Réalisation et Tests
+# Chapitre 3 : R├®alisation et Tests
 
 ## Introduction
 
-Ce chapitre décrit la mise en œuvre pratique de la plateforme **AutoExpert**, organisée en trois sprints successifs selon la méthodologie Scrum. Pour chaque sprint, nous présentons le backlog simplifié, les diagrammes UML (cas d'utilisation, séquences, classes), ainsi que les interfaces réalisées. Le chapitre se conclut par les rétrospectives et la phase de tests de validation.
+Ce chapitre d├®crit la mise en ┼ôuvre pratique de la plateforme **AutoExpert**, organis├®e en trois sprints successifs selon la m├®thodologie Scrum. Pour chaque sprint, nous pr├®sentons le backlog simplifi├®, les diagrammes UML (cas d'utilisation, s├®quences, classes), ainsi que les interfaces r├®alis├®es. Le chapitre se conclut par les r├®trospectives et la phase de tests de validation.
 
 ---
 
-## Sprint 1 : Authentification, Accueil & Base — Fondations Sécurisées
-**Durée : 1 semaine | Effort : 14 points**
+## Sprint 1 : Authentification, Accueil & Base ÔÇö Fondations S├®curis├®es
+**Dur├®e : 1 semaine | Effort : 14 points**
 
-Le premier sprint pose les fondations sécurisées de l'application : authentification complète (inscription, connexion, réinitialisation du mot de passe), mise en place de l'interface d'accueil, des tableaux de bord, de la gestion des profils utilisateur, des clients et du catalogue de services.
+Le premier sprint pose les fondations s├®curis├®es de l'application : authentification compl├¿te (inscription, connexion, r├®initialisation du mot de passe), mise en place de l'interface d'accueil, des tableaux de bord, de la gestion des profils utilisateur, des clients et du catalogue de services.
 
 ### 1.1 Backlog du Sprint 1
 
-| ID | User Story | Tâche principale | Effort |
+| ID | User Story | T├óche principale | Effort |
 |---|---|---|---|
-| **US-1a/b** | En tant que Visiteur, je veux m'inscrire et me connecter pour accéder à mon espace personnel. | Développer les routes d'authentification (JWT + Bcrypt) et les formulaires React. | Difficile — 5 pts |
-| **US-1c** | En tant qu'Utilisateur, je veux réinitialiser mon mot de passe par email pour récupérer mon accès. | Implémenter l'envoi d'email sécurisé avec lien temporaire via Nodemailer. | Intermédiaire — 3 pts |
-| **US-1d** | En tant que Client, je veux gérer mon profil pour maintenir mes informations à jour. | Créer la route de mise à jour du profil, l'interface des paramètres et le Dashboard Client. | Intermédiaire — 2 pts |
-| **US-1e** | En tant qu'Administrateur, je veux gérer les comptes clients pour contrôler les accès. | Mettre en place la liste des utilisateurs, le contrôle des accès et le Dashboard Admin. | Intermédiaire — 2 pts |
-| **US-2** | En tant qu'Administrateur, je veux gérer les services pour définir le catalogue du garage. | Développer la gestion complète (CRUD) du catalogue des prestations. | Facile — 2 pts |
+| **US-1a/b** | En tant que Visiteur, je veux m'inscrire et me connecter pour acc├®der ├á mon espace personnel. | D├®velopper les routes d'authentification (JWT + Bcrypt) et les formulaires React. | Difficile ÔÇö 5 pts |
+| **US-1c** | En tant qu'Utilisateur, je veux r├®initialiser mon mot de passe par email pour r├®cup├®rer mon acc├¿s. | Impl├®menter l'envoi d'email s├®curis├® avec lien temporaire via Nodemailer. | Interm├®diaire ÔÇö 3 pts |
+| **US-1d** | En tant que Client, je veux g├®rer mon profil pour maintenir mes informations ├á jour. | Cr├®er la route de mise ├á jour du profil, l'interface des param├¿tres et le Dashboard Client. | Interm├®diaire ÔÇö 2 pts |
+| **US-1e** | En tant qu'Administrateur, je veux g├®rer les comptes clients pour contr├┤ler les acc├¿s. | Mettre en place la liste des utilisateurs, le contr├┤le des acc├¿s et le Dashboard Admin. | Interm├®diaire ÔÇö 2 pts |
+| **US-2** | En tant qu'Administrateur, je veux g├®rer les services pour d├®finir le catalogue du garage. | D├®velopper la gestion compl├¿te (CRUD) du catalogue des prestations. | Facile ÔÇö 2 pts |
 | | | **TOTAL** | **14 pts** |
 
-### 1.2 Diagramme de Cas d'Utilisation — Sprint 1
+### 1.2 Diagramme de Cas d'Utilisation ÔÇö Sprint 1
 
-#### Use Case Global — Vue Abstraite
+#### Use Case Global ÔÇö Vue Abstraite
 
-Au premier niveau, les cas d'utilisation sont regroupés sous la forme d'actions génériques « Gérer... ». Ce diagramme offre une vision synthétique du périmètre fonctionnel du sprint :
+Au premier niveau, les cas d'utilisation sont regroup├®s sous la forme d'actions g├®n├®riques ┬½ G├®rer... ┬╗. Ce diagramme offre une vision synth├®tique du p├®rim├¿tre fonctionnel du sprint :
 
-- **Gérer l'Authentification** : inscription, connexion, réinitialisation
-- **Gérer les Comptes** : profil utilisateur et gestion administrative
-- **Gérer les Services** : catalogue du garage
+- **G├®rer l'Authentification** : inscription, connexion, r├®initialisation
+- **G├®rer les Comptes** : profil utilisateur et gestion administrative
+- **G├®rer les Services** : catalogue du garage
 
-#### Use Case Raffiné — Vue Détaillée par Acteur
+#### Use Case Raffin├® ÔÇö Vue D├®taill├®e par Acteur
 
-Ce niveau détaille chaque cas global en actions concrètes :
+Ce niveau d├®taille chaque cas global en actions concr├¿tes :
 
 **Acteurs** :
-- **Visiteur** : utilisateur non authentifié
-- **Client** : utilisateur authentifié avec rôle « client »
-- **Administrateur** : utilisateur authentifié avec rôle « admin »
-- **Système Email (Nodemailer)** : acteur secondaire externe
+- **Visiteur** : utilisateur non authentifi├®
+- **Client** : utilisateur authentifi├® avec r├┤le ┬½ client ┬╗
+- **Administrateur** : utilisateur authentifi├® avec r├┤le ┬½ admin ┬╗
+- **Syst├¿me Email (Nodemailer)** : acteur secondaire externe
 
 **Relations UML** :
-- `<<include>>` : action toujours exécutée (ex. : vérification JWT)
-- `<<extend>>` : action optionnelle déclenchée sous condition (ex. : réinitialisation si mot de passe oublié)
+- `<<include>>` : action toujours ex├®cut├®e (ex. : v├®rification JWT)
+- `<<extend>>` : action optionnelle d├®clench├®e sous condition (ex. : r├®initialisation si mot de passe oubli├®)
 
-### 1.3 Descriptions des Cas d'Utilisation — Sprint 1
+### 1.3 Descriptions des Cas d'Utilisation ÔÇö Sprint 1
 
 #### Use Case 1 : S'inscrire
 
 | | |
 |---|---|
-| **Acteur principal** | Visiteur (non connecté) |
-| **Objectif** | Créer un nouveau compte client sur la plateforme AutoExpert |
-| **Pré-conditions** | L'utilisateur n'a pas encore de compte. L'email saisi n'existe pas en base. |
-| **Scénario nominal** | 1. Le visiteur remplit le formulaire (nom, email, téléphone, mot de passe)<br>2. Le frontend valide les champs en temps réel<br>3. Le backend vérifie l'unicité de l'email<br>4. Le mot de passe est haché via Bcrypt<br>5. Un compte avec le rôle « client » est créé<br>6. Un JWT est généré et l'utilisateur est redirigé vers son dashboard |
-| **Scénario alternatif** | Email déjà existant → HTTP 409 + message « Cet email est déjà utilisé » |
+| **Acteur principal** | Visiteur (non connect├®) |
+| **Objectif** | Cr├®er un nouveau compte client sur la plateforme AutoExpert |
+| **Pr├®-conditions** | L'utilisateur n'a pas encore de compte. L'email saisi n'existe pas en base. |
+| **Sc├®nario nominal** | 1. Le visiteur remplit le formulaire (nom, email, t├®l├®phone, mot de passe)<br>2. Le frontend valide les champs en temps r├®el<br>3. Le backend v├®rifie l'unicit├® de l'email<br>4. Le mot de passe est hach├® via Bcrypt<br>5. Un compte avec le r├┤le ┬½ client ┬╗ est cr├®├®<br>6. Un JWT est g├®n├®r├® et l'utilisateur est redirig├® vers son dashboard |
+| **Sc├®nario alternatif** | Email d├®j├á existant ÔåÆ HTTP 409 + message ┬½ Cet email est d├®j├á utilis├® ┬╗ |
 
 #### Use Case 2 : Se connecter
 
 | | |
 |---|---|
-| **Acteur principal** | Visiteur possédant un compte (Client ou Admin) |
-| **Objectif** | Accéder à son espace personnel via une authentification sécurisée |
-| **Pré-conditions** | L'utilisateur possède un compte actif avec email et mot de passe valides |
-| **Scénario nominal** | 1. L'utilisateur saisit son email et son mot de passe<br>2. Le backend compare le mot de passe avec le hash Bcrypt stocké<br>3. Un JWT est généré et retourné au frontend (validité : 30 jours)<br>4. Redirection selon le rôle : Client → Dashboard Client / Admin → Dashboard Admin |
-| **Scénario alternatif** | Identifiants incorrects → HTTP 401 + message « Email ou mot de passe incorrect »<br>Compte bloqué → HTTP 403 + message « Compte désactivé » |
+| **Acteur principal** | Visiteur poss├®dant un compte (Client ou Admin) |
+| **Objectif** | Acc├®der ├á son espace personnel via une authentification s├®curis├®e |
+| **Pr├®-conditions** | L'utilisateur poss├¿de un compte actif avec email et mot de passe valides |
+| **Sc├®nario nominal** | 1. L'utilisateur saisit son email et son mot de passe<br>2. Le backend compare le mot de passe avec le hash Bcrypt stock├®<br>3. Un JWT est g├®n├®r├® et retourn├® au frontend (validit├® : 30 jours)<br>4. Redirection selon le r├┤le : Client ÔåÆ Dashboard Client / Admin ÔåÆ Dashboard Admin |
+| **Sc├®nario alternatif** | Identifiants incorrects ÔåÆ HTTP 401 + message ┬½ Email ou mot de passe incorrect ┬╗<br>Compte bloqu├® ÔåÆ HTTP 403 + message ┬½ Compte d├®sactiv├® ┬╗ |
 
-#### Use Case 3 : Réinitialiser le mot de passe
-
-| | |
-|---|---|
-| **Acteur principal** | Utilisateur ayant oublié son mot de passe |
-| **Objectif** | Retrouver l'accès à son compte via un lien sécurisé envoyé par email |
-| **Pré-conditions** | L'utilisateur possède un compte actif avec un email valide enregistré en base |
-| **Scénario nominal** | 1. L'utilisateur saisit son email sur la page « Mot de passe oublié »<br>2. Le backend génère un token unique valable 1 heure<br>3. Nodemailer envoie le lien de réinitialisation (système externe)<br>4. L'utilisateur clique sur le lien et saisit son nouveau mot de passe<br>5. Le token est validé et le nouveau mot de passe haché est sauvegardé |
-| **Scénario alternatif** | Token expiré (> 1h) → Message « Lien expiré »<br>Lien déjà utilisé → Message « Lien invalide » |
-
-#### Use Case 4 : Gérer les services (Admin)
+#### Use Case 3 : R├®initialiser le mot de passe
 
 | | |
 |---|---|
-| **Acteur principal** | Administrateur authentifié |
-| **Objectif** | Créer, modifier, consulter et archiver les prestations du catalogue du garage |
-| **Pré-conditions** | L'administrateur est connecté avec le rôle « admin » |
-| **Scénario nominal** | 1. L'admin accède à la page « Gestion des Services »<br>2. Il consulte le catalogue existant<br>3. Il crée, modifie ou archive un service (nom, description, prix, durée, catégorie)<br>4. Les modifications sont sauvegardées via l'API REST |
-| **Scénario alternatif** | Champ obligatoire manquant → Message de validation<br>Service lié à une réservation active → Archivage proposé à la place de la suppression |
+| **Acteur principal** | Utilisateur ayant oubli├® son mot de passe |
+| **Objectif** | Retrouver l'acc├¿s ├á son compte via un lien s├®curis├® envoy├® par email |
+| **Pr├®-conditions** | L'utilisateur poss├¿de un compte actif avec un email valide enregistr├® en base |
+| **Sc├®nario nominal** | 1. L'utilisateur saisit son email sur la page ┬½ Mot de passe oubli├® ┬╗<br>2. Le backend g├®n├¿re un token unique valable 1 heure<br>3. Nodemailer envoie le lien de r├®initialisation (syst├¿me externe)<br>4. L'utilisateur clique sur le lien et saisit son nouveau mot de passe<br>5. Le token est valid├® et le nouveau mot de passe hach├® est sauvegard├® |
+| **Sc├®nario alternatif** | Token expir├® (> 1h) ÔåÆ Message ┬½ Lien expir├® ┬╗<br>Lien d├®j├á utilis├® ÔåÆ Message ┬½ Lien invalide ┬╗ |
 
-### 1.4 Diagramme de Classes — Sprint 1
+#### Use Case 4 : G├®rer les services (Admin)
 
-**Entités principales** :
+| | |
+|---|---|
+| **Acteur principal** | Administrateur authentifi├® |
+| **Objectif** | Cr├®er, modifier, consulter et archiver les prestations du catalogue du garage |
+| **Pr├®-conditions** | L'administrateur est connect├® avec le r├┤le ┬½ admin ┬╗ |
+| **Sc├®nario nominal** | 1. L'admin acc├¿de ├á la page ┬½ Gestion des Services ┬╗<br>2. Il consulte le catalogue existant<br>3. Il cr├®e, modifie ou archive un service (nom, description, prix, dur├®e, cat├®gorie)<br>4. Les modifications sont sauvegard├®es via l'API REST |
+| **Sc├®nario alternatif** | Champ obligatoire manquant ÔåÆ Message de validation<br>Service li├® ├á une r├®servation active ÔåÆ Archivage propos├® ├á la place de la suppression |
+
+### 1.4 Diagramme de Classes ÔÇö Sprint 1
+
+**Entit├®s principales** :
 
 ```
-┌─────────────────────────────────────┐
-│           User (Utilisateur)        │
-├─────────────────────────────────────┤
-│ • _id: ObjectId (PK)               │
-│ • name: String (requis)            │
-│ • email: String (requis, unique)   │
-│ • password: String (hashé Bcrypt)  │
-│ • phone: String (requis)           │
-│ • role: Enum ['client', 'admin']   │
-│ • isActive: Boolean (défaut: true) │
-│ • resetPasswordToken: String?      │
-│ • resetPasswordExpire: Date?       │
-│ • createdAt: Date                  │
-│ • updatedAt: Date                  │
-└─────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé           User (Utilisateur)        Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)               Ôöé
+Ôöé ÔÇó name: String (requis)            Ôöé
+Ôöé ÔÇó email: String (requis, unique)   Ôöé
+Ôöé ÔÇó password: String (hash├® Bcrypt)  Ôöé
+Ôöé ÔÇó phone: String (requis)           Ôöé
+Ôöé ÔÇó role: Enum ['client', 'admin']   Ôöé
+Ôöé ÔÇó isActive: Boolean (d├®faut: true) Ôöé
+Ôöé ÔÇó resetPasswordToken: String?      Ôöé
+Ôöé ÔÇó resetPasswordExpire: Date?       Ôöé
+Ôöé ÔÇó createdAt: Date                  Ôöé
+Ôöé ÔÇó updatedAt: Date                  Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 
-┌─────────────────────────────────────┐
-│         Service (Prestation)        │
-├─────────────────────────────────────┤
-│ • _id: ObjectId (PK)               │
-│ • name: String (requis)            │
-│ • description: String              │
-│ • basePrice: Number (requis)       │
-│ • estimatedTime: String (ex: "2h") │
-│ • category: String (requis)        │
-│ • archivedAt: Date? (null si actif)│
-│ • createdAt: Date                  │
-│ • updatedAt: Date                  │
-└─────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé         Service (Prestation)        Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)               Ôöé
+Ôöé ÔÇó name: String (requis)            Ôöé
+Ôöé ÔÇó description: String              Ôöé
+Ôöé ÔÇó price: Number (requis)           Ôöé
+Ôöé ÔÇó duration: String (ex: "2h")      Ôöé
+Ôöé ÔÇó category: String (requis)        Ôöé
+Ôöé ÔÇó createdAt: Date                  Ôöé
+Ôöé ÔÇó updatedAt: Date                  Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 ```
 
 **Relations** :
-- Un Administrateur gère plusieurs Services
-- Chaque User est identifié par son rôle (client / admin)
+- Un Administrateur g├¿re plusieurs Services
+- Chaque User est identifi├® par son r├┤le (client / admin)
 
-### 1.5 Réalisation du Sprint 1 — Interfaces Utilisateur
+### 1.5 R├®alisation du Sprint 1 ÔÇö Interfaces Utilisateur
 
 Le Sprint 1 livre 9 interfaces principales :
 
 #### 1. Page d'Accueil (Visiteur)
 - Vitrine publique de la plateforme
-- Présentation du garage, services proposés
+- Pr├®sentation du garage, services propos├®s
 - Boutons d'inscription et connexion
-- Accès sans authentification
+- Acc├¿s sans authentification
 
 #### 2. Interface de Connexion
 - Formulaire email + mot de passe
 - Option affichage/masquage du mot de passe
-- Lien « Mot de passe oublié »
+- Lien ┬½ Mot de passe oubli├® ┬╗
 - Lien vers page d'inscription
 - Messages d'erreur explicites sans rechargement
 
 #### 3. Interface d'Inscription
-- Formulaire : nom, email, téléphone, mot de passe (confirmation)
-- Validation en temps réel des champs
-- Rôle « client » attribué automatiquement
-- Redirection vers dashboard après génération JWT
+- Formulaire : nom, email, t├®l├®phone, mot de passe (confirmation)
+- Validation en temps r├®el des champs
+- R├┤le ┬½ client ┬╗ attribu├® automatiquement
+- Redirection vers dashboard apr├¿s g├®n├®ration JWT
 
-#### 4. Interface de Réinitialisation du Mot de Passe
-- Étape 1 : saisie de l'email pour recevoir le lien sécurisé
-- Étape 2 : saisie du nouveau mot de passe
-- Validité du lien : 1 heure, utilisation unique
+#### 4. Interface de R├®initialisation du Mot de Passe
+- ├ëtape 1 : saisie de l'email pour recevoir le lien s├®curis├®
+- ├ëtape 2 : saisie du nouveau mot de passe
+- Validit├® du lien : 1 heure, utilisation unique
 
 #### 5. Dashboard Client
-- Tableau de bord personnalisé du client
-- Résumé des véhicules enregistrés
-- Liste des réservations récentes
-- État des réparations en cours
-- Accès rapide au Chat IA
-- Navigation latérale vers sections de l'espace personnel
+- Tableau de bord personnalis├® du client
+- R├®sum├® des v├®hicules enregistr├®s
+- Liste des r├®servations r├®centes
+- ├ëtat des r├®parations en cours
+- Acc├¿s rapide au Chat IA
+- Navigation lat├®rale vers sections de l'espace personnel
 
 #### 6. Dashboard Administrateur
 - Tableau de bord global avec cartes KPI :
   - Clients totaux
-  - Réservations du mois
-  - Réparations en cours
+  - R├®servations du mois
+  - R├®parations en cours
   - Revenus du mois
-- Liste des dernières réservations à traiter
+- Liste des derni├¿res r├®servations ├á traiter
 - Navigation vers tous les modules de gestion
 
 #### 7. Gestion du Profil (Client)
-- Modification des informations personnelles (nom, téléphone)
+- Modification des informations personnelles (nom, t├®l├®phone)
 - Changement du mot de passe
-- Sauvegarde sécurisée via requête PUT (middleware JWT)
+- Sauvegarde s├®curis├®e via requ├¬te PUT (middleware JWT)
 
 #### 8. Gestion des Services (Admin)
-
-**Objectif** : Gérer le catalogue des prestations du garage avec **archivage intelligent** pour préserver l'historique tout en contrôlant les nouvelles réservations.
-
-**Interface Principale**:
-- Catalogue en cartes : nom, catégorie (badge coloré), prix (basePrice), durée estimée
-- Création via formulaire modal
-- Modification et édition pour chaque service
-
-**Système d'Archivage Intelligent** 📦:
-
-Le système d'archivage utilise un champ `archivedAt` (Date | null) pour distinguer les services :
-
-| État | `archivedAt` | Visible ? | Réservable ? | Action Admin |
-|---|---|---|---|---|
-| **Actif** | `null` | ✅ Oui | ✅ Oui | Bouton 📦 Archive |
-| **Archivé** | `Date` | ❌ Non (aux clients) | ❌ Non | Bouton ✓ Reactivate |
-
-**Logique de suppression intelligente**:
-- **Suppression simple** : Si aucune réservation active n'est liée → Service supprimé complètement
-- **Archivage forcé** : Si des réservations (pending/accepted) existent → `archivedAt = now()` (pas de suppression)
-- **Sécurité client** : Le client NE PEUT PAS réserver un service archivé (validation backend)
-
-**Détails des boutons**:
-- 📦 **Archive** : Marque le service comme archivé (`archivedAt = new Date()`)
-- ✓ **Reactivate** : Réactive un service archivé (`archivedAt = null`)
-- 🗑️ **Delete** : Supprime ou archive selon les réservations actives
-- ✎ **Edit** : Modifie les informations du service
-
-**Avec codes couleurs**:
-- Badge vert **"✓ Actif"** pour services actifs
-- Badge orange **"⊘ Archivé"** pour services archivés (visibles admin seulement)
-- Opacité réduite (75%) pour services archivés dans l'interface admin
-
-**Flux pour clients**:
-- Route `GET /api/services` affiche **seulement** les services avec `archivedAt === null`
-- Les anciens clients peuvent consulter l'historique de leurs réservations, même si le service est archivé
+- Catalogue en cartes : nom, cat├®gorie (badge color├®), prix, dur├®e
+- Cr├®ation via formulaire modal
+- Modification et archivage pour chaque service
 
 #### 9. Gestion des Clients (Admin)
-- Tableau paginé : nom, email, téléphone, date d'inscription, statut
+- Tableau pagin├® : nom, email, t├®l├®phone, date d'inscription, statut
 - Actions : basculer statut, supprimer compte
 - Recherche par nom ou email
 
-### 1.6 Rétrospective — Sprint 1
+### 1.6 R├®trospective ÔÇö Sprint 1
 
-| Catégorie | Détails |
+| Cat├®gorie | D├®tails |
 |---|---|
-| **✅ Points positifs** | • Architecture MERN opérationnelle dès le début<br>• Authentification JWT + Bcrypt sécurisée et fonctionnelle<br>• 14/14 points livrés — taux de complétion : **100%**<br>• Communication fluide avec les stakeholders |
-| **⚠️ Difficultés** | • Configuration initiale de Nodemailer (port SMTP)<br>• Gestion des tokens de réinitialisation avec expiration<br>• Relations Mongoose (virtual fields et références) |
-| **🔧 Actions correctives** | • Documenter toutes les variables d'environnement (.env)<br>• Ajouter commentaires JSDoc sur les contrôleurs backend<br>• Tester systématiquement les cas limites des formulaires |
+| **Ô£à Points positifs** | ÔÇó Architecture MERN op├®rationnelle d├¿s le d├®but<br>ÔÇó Authentification JWT + Bcrypt s├®curis├®e et fonctionnelle<br>ÔÇó 14/14 points livr├®s ÔÇö taux de compl├®tion : **100%**<br>ÔÇó Communication fluide avec les stakeholders |
+| **ÔÜá´©Å Difficult├®s** | ÔÇó Configuration initiale de Nodemailer (port SMTP)<br>ÔÇó Gestion des tokens de r├®initialisation avec expiration<br>ÔÇó Relations Mongoose (virtual fields et r├®f├®rences) |
+| **­ƒöº Actions correctives** | ÔÇó Documenter toutes les variables d'environnement (.env)<br>ÔÇó Ajouter commentaires JSDoc sur les contr├┤leurs backend<br>ÔÇó Tester syst├®matiquement les cas limites des formulaires |
 
-#### Fonctionnalités validées — Sprint 1
+#### Fonctionnalit├®s valid├®es ÔÇö Sprint 1
 
-| Fonctionnalité | Statut | Remarques |
+| Fonctionnalit├® | Statut | Remarques |
 |---|---|---|
-| Inscription / Connexion sécurisée | ✅ | JWT + Bcrypt opérationnels |
-| Réinitialisation MDP par email | ✅ | Token 1h, Nodemailer configuré |
-| Gestion du profil — Client | ✅ | Modification des informations personnelles |
-| Dashboard Client + Dashboard Admin | ✅ | Interfaces de navigation opérationnelles |
-| Gestion des clients — Admin | ✅ | Bloquer / Activer / Supprimer |
-| CRUD Services — Admin | ✅ | Catalogue complet fonctionnel |
-| Page d'accueil publique | ✅ | Interface vitrine visible sans authentification |
+| Inscription / Connexion s├®curis├®e | Ô£à | JWT + Bcrypt op├®rationnels |
+| R├®initialisation MDP par email | Ô£à | Token 1h, Nodemailer configur├® |
+| Gestion du profil ÔÇö Client | Ô£à | Modification des informations personnelles |
+| Dashboard Client + Dashboard Admin | Ô£à | Interfaces de navigation op├®rationnelles |
+| Gestion des clients ÔÇö Admin | Ô£à | Bloquer / Activer / Supprimer |
+| CRUD Services ÔÇö Admin | Ô£à | Catalogue complet fonctionnel |
+| Page d'accueil publique | Ô£à | Interface vitrine visible sans authentification |
 
 ---
 
-## Sprint 2 : Gestion Métier — Essentiels Opérationnels
-**Durée : 1 semaine | Effort : 17 points**
+## Sprint 2 : Gestion M├®tier ÔÇö Essentiels Op├®rationnels
+**Dur├®e : 1 semaine | Effort : 17 points**
 
-Le deuxième sprint implémente le cœur opérationnel de la plateforme : la gestion des véhicules clients, la prise de rendez-vous en ligne et sa validation par l'administrateur, ainsi que la génération et la validation des devis détaillés.
+Le deuxi├¿me sprint impl├®mente le c┼ôur op├®rationnel de la plateforme : la gestion des v├®hicules clients, la prise de rendez-vous en ligne et sa validation par l'administrateur, ainsi que la g├®n├®ration et la validation des devis d├®taill├®s.
 
-**Flux métier complet** : Véhicule → Réservation → Validation Admin → Devis → Acceptation Client → Réparation automatique
+**Flux m├®tier complet** : V├®hicule ÔåÆ R├®servation ÔåÆ Validation Admin ÔåÆ Devis ÔåÆ Acceptation Client ÔåÆ R├®paration automatique
 
 ### 2.1 Backlog du Sprint 2
 
-| ID | User Story | Tâche principale | Effort |
+| ID | User Story | T├óche principale | Effort |
 |---|---|---|---|
-| **US-3** | En tant que Client, je veux gérer mes véhicules (CRUD) pour les associer à mes interventions. | Développer les routes sécurisées CRUD et l'interface de gestion du parc automobile. | Intermédiaire — 3 pts |
-| **US-4** | En tant que Client, je veux prendre et annuler un RDV. En tant qu'Admin, je veux valider ou refuser. | Implémenter le workflow de réservation complet avec gestion des statuts. | Difficile — 7 pts |
-| **US-5** | En tant qu'Admin, je veux créer un devis chiffré. En tant que Client, je veux l'accepter ou refuser. | Développer le modèle Devis, le calcul automatique du total et le déclenchement de la réparation. | Difficile — 7 pts |
+| **US-3** | En tant que Client, je veux g├®rer mes v├®hicules (CRUD) pour les associer ├á mes interventions. | D├®velopper les routes s├®curis├®es CRUD et l'interface de gestion du parc automobile. | Interm├®diaire ÔÇö 3 pts |
+| **US-4** | En tant que Client, je veux prendre et annuler un RDV. En tant qu'Admin, je veux valider ou refuser. | Impl├®menter le workflow de r├®servation complet avec gestion des statuts. | Difficile ÔÇö 7 pts |
+| **US-5** | En tant qu'Admin, je veux cr├®er un devis chiffr├®. En tant que Client, je veux l'accepter ou refuser. | D├®velopper le mod├¿le Devis, le calcul automatique du total et le d├®clenchement de la r├®paration. | Difficile ÔÇö 7 pts |
 | | | **TOTAL** | **17 pts** |
 
-### 2.2 Descriptions des Cas d'Utilisation — Sprint 2
+### 2.2 Descriptions des Cas d'Utilisation ÔÇö Sprint 2
 
-#### Use Case 5 : Gérer ses véhicules (Client)
-
-| | |
-|---|---|
-| **Acteur principal** | Client authentifié |
-| **Objectif** | Ajouter, consulter, modifier et supprimer ses véhicules pour les associer aux interventions |
-| **Pré-conditions** | Le client est connecté. Pour l'ajout : l'immatriculation ne doit pas déjà exister en base. |
-| **Scénario nominal** | 1. Le client accède à la page « Mes Véhicules »<br>2. Il remplit le formulaire (marque, modèle, année, immatriculation, VIN, kilométrage, couleur)<br>3. Le backend valide l'unicité de l'immatriculation<br>4. Le véhicule est sauvegardé et apparaît dans la liste |
-| **Scénario alternatif** | Immatriculation déjà enregistrée → Message « Cette immatriculation existe déjà » |
-
-#### Use Case 6 : Gérer les réservations (Client + Admin)
+#### Use Case 5 : G├®rer ses v├®hicules (Client)
 
 | | |
 |---|---|
-| **Acteur principal** | Client (création / annulation), Admin (validation / refus) |
-| **Objectif** | Planifier l'entretien d'un véhicule et organiser le planning de l'atelier |
-| **Pré-conditions** | Le client possède au moins un véhicule. Le service sélectionné est actif. |
-| **Scénario nominal** | 1. Le client sélectionne un véhicule, un service (prédéfini ou libre) et une date<br>2. La réservation est créée avec le statut « En attente »<br>3. L'admin consulte les demandes en attente et accepte ou refuse<br>4. Le statut est mis à jour (Acceptée / Refusée) et visible par le client |
-| **Scénario alternatif** | Client annule → statut « Annulée »<br>Admin refuse → notification côté client |
+| **Acteur principal** | Client authentifi├® |
+| **Objectif** | Ajouter, consulter, modifier et supprimer ses v├®hicules pour les associer aux interventions |
+| **Pr├®-conditions** | Le client est connect├®. Pour l'ajout : l'immatriculation ne doit pas d├®j├á exister en base. |
+| **Sc├®nario nominal** | 1. Le client acc├¿de ├á la page ┬½ Mes V├®hicules ┬╗<br>2. Il remplit le formulaire (marque, mod├¿le, ann├®e, immatriculation, VIN, kilom├®trage, couleur)<br>3. Le backend valide l'unicit├® de l'immatriculation<br>4. Le v├®hicule est sauvegard├® et appara├«t dans la liste |
+| **Sc├®nario alternatif** | Immatriculation d├®j├á enregistr├®e ÔåÆ Message ┬½ Cette immatriculation existe d├®j├á ┬╗ |
 
-#### Use Case 7 : Gérer les devis (Admin + Client)
+#### Use Case 6 : G├®rer les r├®servations (Client + Admin)
 
 | | |
 |---|---|
-| **Acteur principal** | Admin (création), Client (acceptation / refus) |
-| **Objectif** | Chiffrer précisément les travaux et obtenir la validation du client avant démarrage |
-| **Pré-conditions** | La réservation correspondante a été acceptée par l'administrateur |
-| **Scénario nominal** | 1. L'admin crée le devis en sélectionnant services, quantités et prix unitaires<br>2. Le backend calcule automatiquement le total<br>3. Le client consulte le devis dans « Mes Devis » et accepte ou refuse<br>4. Si accepté → une réparation est créée automatiquement (statut « En cours »)<br>5. Si refusé → l'admin est notifié |
-| **Scénario alternatif** | Devis refusé par le client → statut « Refusé », aucune réparation créée |
+| **Acteur principal** | Client (cr├®ation / annulation), Admin (validation / refus) |
+| **Objectif** | Planifier l'entretien d'un v├®hicule et organiser le planning de l'atelier |
+| **Pr├®-conditions** | Le client poss├¿de au moins un v├®hicule. Le service s├®lectionn├® est actif. |
+| **Sc├®nario nominal** | 1. Le client s├®lectionne un v├®hicule, un service (pr├®d├®fini ou libre) et une date<br>2. La r├®servation est cr├®├®e avec le statut ┬½ En attente ┬╗<br>3. L'admin consulte les demandes en attente et accepte ou refuse<br>4. Le statut est mis ├á jour (Accept├®e / Refus├®e) et visible par le client |
+| **Sc├®nario alternatif** | Client annule ÔåÆ statut ┬½ Annul├®e ┬╗<br>Admin refuse ÔåÆ notification c├┤t├® client |
 
-### 2.3 Diagramme de Classes — Sprint 2
+#### Use Case 7 : G├®rer les devis (Admin + Client)
 
-**Nouvelles entités** :
+| | |
+|---|---|
+| **Acteur principal** | Admin (cr├®ation), Client (acceptation / refus) |
+| **Objectif** | Chiffrer pr├®cis├®ment les travaux et obtenir la validation du client avant d├®marrage |
+| **Pr├®-conditions** | La r├®servation correspondante a ├®t├® accept├®e par l'administrateur |
+| **Sc├®nario nominal** | 1. L'admin cr├®e le devis en s├®lectionnant services, quantit├®s et prix unitaires<br>2. Le backend calcule automatiquement le total<br>3. Le client consulte le devis dans ┬½ Mes Devis ┬╗ et accepte ou refuse<br>4. Si accept├® ÔåÆ une r├®paration est cr├®├®e automatiquement (statut ┬½ En cours ┬╗)<br>5. Si refus├® ÔåÆ l'admin est notifi├® |
+| **Sc├®nario alternatif** | Devis refus├® par le client ÔåÆ statut ┬½ Refus├® ┬╗, aucune r├®paration cr├®├®e |
+
+### 2.3 Diagramme de Classes ÔÇö Sprint 2
+
+**Nouvelles entit├®s** :
 
 ```
-┌──────────────────────────────────────┐
-│        Vehicle (Véhicule)            │
-├──────────────────────────────────────┤
-│ • _id: ObjectId (PK)                │
-│ • userId: ObjectId (FK → User)      │
-│ • brand: String (marque, requis)    │
-│ • model: String (modèle, requis)    │
-│ • year: Number (année, requis)      │
-│ • plate: String (immatriculation)   │
-│   UNIQUE, UPPERCASE, requis         │
-│ • vin: String (VIN, requis)         │
-│ • color: String                     │
-│ • mileage: Number (kilométrage)     │
-│ • createdAt: Date                   │
-│ • updatedAt: Date                   │
-└──────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé        Vehicle (V├®hicule)            Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)                Ôöé
+Ôöé ÔÇó userId: ObjectId (FK ÔåÆ User)      Ôöé
+Ôöé ÔÇó brand: String (marque, requis)    Ôöé
+Ôöé ÔÇó model: String (mod├¿le, requis)    Ôöé
+Ôöé ÔÇó year: Number (ann├®e, requis)      Ôöé
+Ôöé ÔÇó plate: String (immatriculation)   Ôöé
+Ôöé   UNIQUE, UPPERCASE, requis         Ôöé
+Ôöé ÔÇó vin: String (VIN, requis)         Ôöé
+Ôöé ÔÇó color: String                     Ôöé
+Ôöé ÔÇó mileage: Number (kilom├®trage)     Ôöé
+Ôöé ÔÇó createdAt: Date                   Ôöé
+Ôöé ÔÇó updatedAt: Date                   Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 
-┌──────────────────────────────────────┐
-│      Reservation (Réservation)       │
-├──────────────────────────────────────┤
-│ • _id: ObjectId (PK)                │
-│ • userId: ObjectId (FK → User)      │
-│ • vehicleId: ObjectId (FK → Vehicle)│
-│ • serviceId: ObjectId (FK → Service)│
-│ • date: Date (date demandée)        │
-│ • status: Enum                      │
-│   ['pending', 'accepted', 'rejected']│
-│ • createdAt: Date                   │
-│ • updatedAt: Date                   │
-└──────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé      Reservation (R├®servation)       Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)                Ôöé
+Ôöé ÔÇó userId: ObjectId (FK ÔåÆ User)      Ôöé
+Ôöé ÔÇó vehicleId: ObjectId (FK ÔåÆ Vehicle)Ôöé
+Ôöé ÔÇó serviceId: ObjectId (FK ÔåÆ Service)Ôöé
+Ôöé ÔÇó date: Date (date demand├®e)        Ôöé
+Ôöé ÔÇó status: Enum                      Ôöé
+Ôöé   ['pending', 'accepted', 'rejected']Ôöé
+Ôöé ÔÇó createdAt: Date                   Ôöé
+Ôöé ÔÇó updatedAt: Date                   Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 
-┌──────────────────────────────────────┐
-│          Devis (Devis)               │
-├──────────────────────────────────────┤
-│ • _id: ObjectId (PK)                │
-│ • userId: ObjectId (FK → User)      │
-│ • vehicleId: ObjectId (FK → Vehicle)│
-│ • reservationId: ObjectId (FK)      │
-│ • serviceLabel: String              │
-│ • amount: Number (montant)          │
-│ • estimatedTime: String             │
-│ • items: Array de DetailItems       │
-│   - name: String                    │
-│   - quantity: Number                │
-│   - price: Number (unitaire)        │
-│ • status: Enum                      │
-│   ['pending', 'accepted', 'rejected']│
-│ • createdAt: Date                   │
-│ • updatedAt: Date                   │
-└──────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé          Devis (Devis)               Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)                Ôöé
+Ôöé ÔÇó userId: ObjectId (FK ÔåÆ User)      Ôöé
+Ôöé ÔÇó vehicleId: ObjectId (FK ÔåÆ Vehicle)Ôöé
+Ôöé ÔÇó reservationId: ObjectId (FK)      Ôöé
+Ôöé ÔÇó serviceLabel: String              Ôöé
+Ôöé ÔÇó amount: Number (montant)          Ôöé
+Ôöé ÔÇó estimatedTime: String             Ôöé
+Ôöé ÔÇó items: Array de DetailItems       Ôöé
+Ôöé   - name: String                    Ôöé
+Ôöé   - quantity: Number                Ôöé
+Ôöé   - price: Number (unitaire)        Ôöé
+Ôöé ÔÇó status: Enum                      Ôöé
+Ôöé   ['pending', 'accepted', 'rejected']Ôöé
+Ôöé ÔÇó createdAt: Date                   Ôöé
+Ôöé ÔÇó updatedAt: Date                   Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 ```
 
-### 2.4 Réalisation du Sprint 2 — Interfaces Utilisateur
+### 2.4 R├®alisation du Sprint 2 ÔÇö Interfaces Utilisateur
 
-#### 1. Mes Véhicules (Client)
-- Liste des véhicules enregistrés : marque, modèle, immatriculation, kilométrage
+#### 1. Mes V├®hicules (Client)
+- Liste des v├®hicules enregistr├®s : marque, mod├¿le, immatriculation, kilom├®trage
 - Ajout via formulaire modal
 - Modification et suppression disponibles
-- Validation de l'unicité de l'immatriculation en temps réel
+- Validation de l'unicit├® de l'immatriculation en temps r├®el
 
-#### 2. Création de Réservation (Client)
-- Deux modes : réservation pour service prédéfini ou problème libre
-- Sélection du véhicule, du service et de la date souhaitée
-- Vérification de disponibilité
+#### 2. Cr├®ation de R├®servation (Client)
+- Deux modes : r├®servation pour service pr├®d├®fini ou probl├¿me libre
+- S├®lection du v├®hicule, du service et de la date souhait├®e
+- V├®rification de disponibilit├®
 
-#### 3. Gestion des Réservations (Admin)
-- Tableau de toutes les réservations
-- Filtres par statut (En attente / Acceptée / Refusée / Annulée)
+#### 3. Gestion des R├®servations (Admin)
+- Tableau de toutes les r├®servations
+- Filtres par statut (En attente / Accept├®e / Refus├®e / Annul├®e)
 - Boutons Accepter / Refuser directement accessibles
 
 #### 4. Gestion des Devis (Admin + Client)
-- **Interface Admin** : création avec services, quantités, prix unitaires — total calculé automatiquement
+- **Interface Admin** : cr├®ation avec services, quantit├®s, prix unitaires ÔÇö total calcul├® automatiquement
 - **Interface Client** : consultation et validation (accepter / refuser)
-- Acceptation déclenche automatiquement la création de réparation
+- Acceptation d├®clenche automatiquement la cr├®ation de r├®paration
 
-### 2.5 Rétrospective — Sprint 2
+### 2.5 R├®trospective ÔÇö Sprint 2
 
-| Catégorie | Détails |
+| Cat├®gorie | D├®tails |
 |---|---|
-| **✅ Points positifs** | • Workflow complet Réservation → Admin → Devis → Client opérationnel<br>• Calcul automatique du total devis fonctionnel<br>• Unicité de l'immatriculation correctement validée<br>• 17/17 points livrés — taux de complétion : **100%** |
-| **⚠️ Difficultés** | • Déclenchement automatique de la réparation après acceptation<br>• Gestion des statuts en cascade<br>• Tests du workflow complet chronophages |
-| **🔧 Actions correctives** | • Refactoriser les contrôleurs backend<br>• Optimiser les requêtes MongoDB avec des index<br>• Ajouter des logs backend pour débogage Sprint 3 |
+| **Ô£à Points positifs** | ÔÇó Workflow complet R├®servation ÔåÆ Admin ÔåÆ Devis ÔåÆ Client op├®rationnel<br>ÔÇó Calcul automatique du total devis fonctionnel<br>ÔÇó Unicit├® de l'immatriculation correctement valid├®e<br>ÔÇó 17/17 points livr├®s ÔÇö taux de compl├®tion : **100%** |
+| **ÔÜá´©Å Difficult├®s** | ÔÇó D├®clenchement automatique de la r├®paration apr├¿s acceptation<br>ÔÇó Gestion des statuts en cascade<br>ÔÇó Tests du workflow complet chronophages |
+| **­ƒöº Actions correctives** | ÔÇó Refactoriser les contr├┤leurs backend<br>ÔÇó Optimiser les requ├¬tes MongoDB avec des index<br>ÔÇó Ajouter des logs backend pour d├®bogage Sprint 3 |
 
-#### Fonctionnalités validées — Sprint 2
+#### Fonctionnalit├®s valid├®es ÔÇö Sprint 2
 
-| Fonctionnalité | Statut | Remarques |
+| Fonctionnalit├® | Statut | Remarques |
 |---|---|---|
-| Gestion des véhicules — CRUD complet | ✅ | Unicité de l'immatriculation validée |
-| Workflow réservation Client → Admin | ✅ | Statuts opérationnels |
-| Création de devis avec calcul automatique | ✅ | Total calculé côté backend |
-| Acceptation devis → Réparation automatique | ✅ | Déclenchement automatique |
+| Gestion des v├®hicules ÔÇö CRUD complet | Ô£à | Unicit├® de l'immatriculation valid├®e |
+| Workflow r├®servation Client ÔåÆ Admin | Ô£à | Statuts op├®rationnels |
+| Cr├®ation de devis avec calcul automatique | Ô£à | Total calcul├® c├┤t├® backend |
+| Acceptation devis ÔåÆ R├®paration automatique | Ô£à | D├®clenchement automatique |
 
 ---
 
-## Sprint 3 : Suivi, Dashboard Analytics & IA — Contrôle de l'Application
-**Durée : 1 semaine | Effort : 10 points**
+## Sprint 3 : Suivi, Dashboard Analytics & IA ÔÇö Contr├┤le de l'Application
+**Dur├®e : 1 semaine | Effort : 10 points**
 
-Le troisième sprint introduit les fonctionnalités différenciatrices : le système de suivi des réparations avec timeline de statuts, le tableau de bord enrichi avec graphiques analytiques, et l'assistant IA de pré-diagnostic basé sur **Ollama llama3.1** — la valeur ajoutée principale d'AutoExpert.
+Le troisi├¿me sprint introduit les fonctionnalit├®s diff├®renciatrices : le syst├¿me de suivi des r├®parations avec timeline de statuts, le tableau de bord enrichi avec graphiques analytiques, et l'assistant IA de pr├®-diagnostic bas├® sur **Ollama llama3.1** ÔÇö la valeur ajout├®e principale d'AutoExpert.
 
 ### 3.1 Backlog du Sprint 3
 
-| ID | User Story | Tâche principale | Effort |
+| ID | User Story | T├óche principale | Effort |
 |---|---|---|---|
-| **US-6** | En tant qu'Admin, je veux faire évoluer le statut d'une réparation pour informer le client. | Développer le système de statuts (En cours → Terminée → Livrée) et notes techniques. | Haute — 2 pts |
-| **US-6b** | En tant que Client, je veux consulter l'état de mes réparations et confirmer récupération. | Implémenter la vue client avec timeline de statut et confirmation. | Haute — 2 pts |
-| **US-7** | En tant qu'Admin, je veux visualiser les statistiques globales du garage. | Programmer les agrégations MongoDB et intégrer les graphiques (KPI, revenus, activité). | Moyenne — 3 pts |
-| **US-8** | En tant que Client, je veux dialoguer avec une IA pour obtenir un pré-diagnostic. | Connecter le backend à Ollama llama3.1 et développer l'interface Chat IA. | Difficile — 5 pts |
+| **US-6** | En tant qu'Admin, je veux faire ├®voluer le statut d'une r├®paration pour informer le client. | D├®velopper le syst├¿me de statuts (En cours ÔåÆ Termin├®e ÔåÆ Livr├®e) et notes techniques. | Haute ÔÇö 2 pts |
+| **US-6b** | En tant que Client, je veux consulter l'├®tat de mes r├®parations et confirmer r├®cup├®ration. | Impl├®menter la vue client avec timeline de statut et confirmation. | Haute ÔÇö 2 pts |
+| **US-7** | En tant qu'Admin, je veux visualiser les statistiques globales du garage. | Programmer les agr├®gations MongoDB et int├®grer les graphiques (KPI, revenus, activit├®). | Moyenne ÔÇö 3 pts |
+| **US-8** | En tant que Client, je veux dialoguer avec une IA pour obtenir un pr├®-diagnostic. | Connecter le backend ├á Ollama llama3.1 et d├®velopper l'interface Chat IA. | Moyenne ÔÇö 3 pts |
 | | | **TOTAL** | **10 pts** |
 
-### 3.2 Descriptions des Cas d'Utilisation — Sprint 3
+### 3.2 Descriptions des Cas d'Utilisation ÔÇö Sprint 3
 
-#### Use Case 8 : Suivi des réparations (Admin + Client)
+#### Use Case 8 : Suivi des r├®parations (Admin + Client)
 
 | | |
 |---|---|
-| **Acteur principal** | Admin (mise à jour statut), Client (consultation et confirmation) |
-| **Objectif** | Suivre l'avancement des travaux et informer le client en temps réel |
-| **Pré-conditions** | Un devis a été accepté — une réparation a été créée (statut « En cours ») |
-| **Scénario nominal (Admin)** | 1. L'admin accède à la liste des réparations en cours<br>2. Il fait évoluer le statut : En cours → Terminée → Livrée<br>3. Il ajoute des notes techniques visibles par le client |
-| **Scénario nominal (Client)** | 1. Le client consulte « Mes Réparations » avec timeline de statut<br>2. Pour une réparation « Livrée », il confirme la récupération |
+| **Acteur principal** | Admin (mise ├á jour statut), Client (consultation et confirmation) |
+| **Objectif** | Suivre l'avancement des travaux et informer le client en temps r├®el |
+| **Pr├®-conditions** | Un devis a ├®t├® accept├® ÔÇö une r├®paration a ├®t├® cr├®├®e (statut ┬½ En cours ┬╗) |
+| **Sc├®nario nominal (Admin)** | 1. L'admin acc├¿de ├á la liste des r├®parations en cours<br>2. Il fait ├®voluer le statut : En cours ÔåÆ Termin├®e ÔåÆ Livr├®e<br>3. Il ajoute des notes techniques visibles par le client |
+| **Sc├®nario nominal (Client)** | 1. Le client consulte ┬½ Mes R├®parations ┬╗ avec timeline de statut<br>2. Pour une r├®paration ┬½ Livr├®e ┬╗, il confirme la r├®cup├®ration |
 
 #### Use Case 9 : Consulter le tableau de bord (Admin)
 
 | | |
 |---|---|
-| **Acteur principal** | Administrateur authentifié |
-| **Objectif** | Visualiser les statistiques globales du garage pour piloter l'activité |
-| **Pré-conditions** | L'admin est connecté. Des données existent en base (réservations, réparations, revenus). |
-| **Scénario nominal** | 1. L'admin accède au Dashboard Analytique<br>2. Les KPI sont calculés par agrégation MongoDB (revenus, réservations, réparations)<br>3. Les graphiques (barres hebdomadaires, camembert revenus) s'affichent<br>4. La liste des dernières réservations à traiter est visible |
-| **Scénario alternatif** | Aucune donnée → indicateurs affichent 0, graphiques vides |
+| **Acteur principal** | Administrateur authentifi├® |
+| **Objectif** | Visualiser les statistiques globales du garage pour piloter l'activit├® |
+| **Pr├®-conditions** | L'admin est connect├®. Des donn├®es existent en base (r├®servations, r├®parations, revenus). |
+| **Sc├®nario nominal** | 1. L'admin acc├¿de au Dashboard Analytique<br>2. Les KPI sont calcul├®s par agr├®gation MongoDB (revenus, r├®servations, r├®parations)<br>3. Les graphiques (barres hebdomadaires, camembert revenus) s'affichent<br>4. La liste des derni├¿res r├®servations ├á traiter est visible |
+| **Sc├®nario alternatif** | Aucune donn├®e ÔåÆ indicateurs affichent 0, graphiques vides |
 
 #### Use Case 10 : Chat IA Automobile (Client)
 
 | | |
 |---|---|
-| **Acteur principal** | Client authentifié |
-| **Acteur secondaire** | Ollama llama3.1 (moteur IA local — système externe) |
-| **Objectif** | Obtenir un pré-diagnostic mécanique personnalisé avant toute prise de rendez-vous |
-| **Pré-conditions** | Client connecté. Ollama llama3.1 installé et opérationnel sur le serveur. |
-| **Scénario nominal** | 1. Le client décrit ses symptômes dans l'interface de chat<br>2. Le message est envoyé au backend (POST /api/chat/diagnose)<br>3. Le backend construit un prompt contextualisé et interroge Ollama<br>4. La réponse est retournée au frontend<br>5. L'interface affiche la réponse avec les services recommandés |
-| **Scénario alternatif** | Ollama indisponible → HTTP 503 + message « L'assistant IA est temporairement indisponible » |
+| **Acteur principal** | Client authentifi├® |
+| **Acteur secondaire** | Ollama llama3.1 (moteur IA local ÔÇö syst├¿me externe) |
+| **Objectif** | Obtenir un pr├®-diagnostic m├®canique personnalis├® avant toute prise de rendez-vous |
+| **Pr├®-conditions** | Client connect├®. Ollama llama3.1 install├® et op├®rationnel sur le serveur. |
+| **Sc├®nario nominal** | 1. Le client d├®crit ses sympt├┤mes dans l'interface de chat<br>2. Le message est envoy├® au backend (POST /api/chat/diagnose)<br>3. Le backend construit un prompt contextualis├® et interroge Ollama<br>4. La r├®ponse est retourn├®e au frontend<br>5. L'interface affiche la r├®ponse avec les services recommand├®s |
+| **Sc├®nario alternatif** | Ollama indisponible ÔåÆ HTTP 503 + message ┬½ L'assistant IA est temporairement indisponible ┬╗ |
 
-### 3.3 Diagramme de Classes — Sprint 3
+### 3.3 Diagramme de Classes ÔÇö Sprint 3
 
-**Nouvelles entités** :
+**Nouvelles entit├®s** :
 
 ```
-┌──────────────────────────────────────┐
-│       Reparation (Réparation)        │
-├──────────────────────────────────────┤
-│ • _id: ObjectId (PK)                │
-│ • userId: ObjectId (FK → User)      │
-│ • vehicleId: ObjectId (FK → Vehicle)│
-│ • devisId: ObjectId (FK → Devis)    │
-│ • totalAmount: Number               │
-│ • service: String                   │
-│ • status: Enum                      │
-│   ['pending', 'in_progress',        │
-│    'completed', 'delivered']        │
-│ • startDate: Date                   │
-│ • estimatedEndDate: Date            │
-│ • completedAt: Date                 │
-│ • deliveredAt: Date                 │
-│ • notes: String                     │
-│ • technicianNotes: String           │
-│ • createdAt: Date                   │
-│ • updatedAt: Date                   │
-└──────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé       Reparation (R├®paration)        Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)                Ôöé
+Ôöé ÔÇó userId: ObjectId (FK ÔåÆ User)      Ôöé
+Ôöé ÔÇó vehicleId: ObjectId (FK ÔåÆ Vehicle)Ôöé
+Ôöé ÔÇó devisId: ObjectId (FK ÔåÆ Devis)    Ôöé
+Ôöé ÔÇó totalAmount: Number               Ôöé
+Ôöé ÔÇó service: String                   Ôöé
+Ôöé ÔÇó status: Enum                      Ôöé
+Ôöé   ['pending', 'in_progress',        Ôöé
+Ôöé    'completed', 'delivered']        Ôöé
+Ôöé ÔÇó startDate: Date                   Ôöé
+Ôöé ÔÇó estimatedEndDate: Date            Ôöé
+Ôöé ÔÇó completedAt: Date                 Ôöé
+Ôöé ÔÇó deliveredAt: Date                 Ôöé
+Ôöé ÔÇó notes: String                     Ôöé
+Ôöé ÔÇó technicianNotes: String           Ôöé
+Ôöé ÔÇó createdAt: Date                   Ôöé
+Ôöé ÔÇó updatedAt: Date                   Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 
-┌──────────────────────────────────────┐
-│     Conversation (Historique IA)     │
-├──────────────────────────────────────┤
-│ • _id: ObjectId (PK)                │
-│ • userId: ObjectId (FK → User)      │
-│ • messages: Array                   │
-│   - sender: Enum ['user', 'ai']    │
-│   - text: String                    │
-│   - timestamp: Date                 │
-│ • vehicleContext: ObjectId (FK)?    │
-│ • createdAt: Date                   │
-│ • updatedAt: Date                   │
-└──────────────────────────────────────┘
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé     Conversation (Historique IA)     Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé ÔÇó _id: ObjectId (PK)                Ôöé
+Ôöé ÔÇó userId: ObjectId (FK ÔåÆ User)      Ôöé
+Ôöé ÔÇó messages: Array                   Ôöé
+Ôöé   - sender: Enum ['user', 'ai']    Ôöé
+Ôöé   - text: String                    Ôöé
+Ôöé   - timestamp: Date                 Ôöé
+Ôöé ÔÇó vehicleContext: ObjectId (FK)?    Ôöé
+Ôöé ÔÇó createdAt: Date                   Ôöé
+Ôöé ÔÇó updatedAt: Date                   Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
 ```
 
-### 3.4 Réalisation du Sprint 3 — Interfaces Utilisateur
+### 3.4 R├®alisation du Sprint 3 ÔÇö Interfaces Utilisateur
 
-#### 1. Suivi des Réparations (Client)
-- Timeline visuelle par véhicule
-- Statut actuel représenté en barre de progression
-- Pour réparations « Livrées » : bouton confirmation récupération
-- Notes techniques du mécanicien visibles en lecture seule
+#### 1. Suivi des R├®parations (Client)
+- Timeline visuelle par v├®hicule
+- Statut actuel repr├®sent├® en barre de progression
+- Pour r├®parations ┬½ Livr├®es ┬╗ : bouton confirmation r├®cup├®ration
+- Notes techniques du m├®canicien visibles en lecture seule
 
-#### 2. Gestion des Réparations (Admin)
-- Liste des réparations en cours
-- Évolution du statut (En cours → Terminée → Livrée)
+#### 2. Gestion des R├®parations (Admin)
+- Liste des r├®parations en cours
+- ├ëvolution du statut (En cours ÔåÆ Termin├®e ÔåÆ Livr├®e)
 - Champ pour ajouter des notes techniques
 - Filtrage par statut disponible
 
 #### 3. Tableau de Bord Analytique enrichi (Admin)
 - Quatre cartes KPI :
   - Clients totaux
-  - Réservations du mois
-  - Réparations en cours
+  - R├®servations du mois
+  - R├®parations en cours
   - Revenus du mois
-- Graphique en barres des réservations par semaine
-- Graphique circulaire des revenus par catégorie de service
-- Tableau des cinq dernières réservations à traiter
+- Graphique en barres des r├®servations par semaine
+- Graphique circulaire des revenus par cat├®gorie de service
+- Tableau des cinq derni├¿res r├®servations ├á traiter
 
 #### 4. Chat IA AutoExpert (Client)
 - Interface conversationnelle avec historique
-- Les réponses s'affichent progressivement
-- Chaque réponse structurée en trois sections :
-  - **Diagnostic probable** : analyse du problème
-  - **Causes possibles** : hypothèses mécaniques
-  - **Services recommandés** : prestations pertinentes (cliquables)
-- Redirection directe vers page de réservation
+- Les r├®ponses s'affichent progressivement
+- Chaque r├®ponse structur├®e en trois sections :
+  - **Diagnostic probable** : analyse du probl├¿me
+  - **Causes possibles** : hypoth├¿ses m├®caniques
+  - **Services recommand├®s** : prestations pertinentes (cliquables)
+- Redirection directe vers page de r├®servation
 
 #### 5. Consultation des Devis (Client)
-- Détail des services, quantités, prix unitaires et total
+- D├®tail des services, quantit├®s, prix unitaires et total
 - Boutons Accepter et Refuser
-- Acceptation déclenche création automatique de réparation
+- Acceptation d├®clenche cr├®ation automatique de r├®paration
 
-### 3.5 Rétrospective — Sprint 3
+### 3.5 R├®trospective ÔÇö Sprint 3
 
-| Catégorie | Détails |
+| Cat├®gorie | D├®tails |
 |---|---|
-| **✅ Points positifs** | • Intégration Ollama llama3.1 fonctionnelle<br>• Tableau de bord analytique complet avec graphiques<br>• Workflow réparation entier opérationnel<br>• 10/10 points livrés — taux de complétion : **100%** |
-| **⚠️ Difficultés** | • Temps de réponse Ollama variable (3-15 secondes)<br>• Agrégation MongoDB pour statistiques de revenus<br>• Optimisation des performances du dashboard |
-| **🔧 Actions correctives** | • Optimiser le prompt système pour réponses concises<br>• Ajouter indicateur d'attente animé IA<br>• Mettre en cache les statistiques du dashboard |
+| **Ô£à Points positifs** | ÔÇó Int├®gration Ollama llama3.1 fonctionnelle<br>ÔÇó Tableau de bord analytique complet avec graphiques<br>ÔÇó Workflow r├®paration entier op├®rationnel<br>ÔÇó 10/10 points livr├®s ÔÇö taux de compl├®tion : **100%** |
+| **ÔÜá´©Å Difficult├®s** | ÔÇó Temps de r├®ponse Ollama variable (3-15 secondes)<br>ÔÇó Agr├®gation MongoDB pour statistiques de revenus<br>ÔÇó Optimisation des performances du dashboard |
+| **­ƒöº Actions correctives** | ÔÇó Optimiser le prompt syst├¿me pour r├®ponses concises<br>ÔÇó Ajouter indicateur d'attente anim├® IA<br>ÔÇó Mettre en cache les statistiques du dashboard |
 
-#### Fonctionnalités validées — Sprint 3
+#### Fonctionnalit├®s valid├®es ÔÇö Sprint 3
 
-| Fonctionnalité | Statut | Remarques |
+| Fonctionnalit├® | Statut | Remarques |
 |---|---|---|
-| Suivi réparations — Admin (3 statuts + notes) | ✅ | Transitions opérationnelles |
-| Suivi réparations — Client (timeline + confirmation) | ✅ | Confirmation de récupération fonctionnelle |
-| Tableau de bord analytique (KPI + graphiques) | ✅ | Agrégations MongoDB + Recharts |
-| Chat IA automobile (llama3.1 via Ollama) | ✅ | Pré-diagnostic avec interface fluide |
-| Consultation et validation des devis (Client) | ✅ | Acceptation → réparation auto |
+| Suivi r├®parations ÔÇö Admin (3 statuts + notes) | Ô£à | Transitions op├®rationnelles |
+| Suivi r├®parations ÔÇö Client (timeline + confirmation) | Ô£à | Confirmation de r├®cup├®ration fonctionnelle |
+| Tableau de bord analytique (KPI + graphiques) | Ô£à | Agr├®gations MongoDB + Recharts |
+| Chat IA automobile (llama3.1 via Ollama) | Ô£à | Pr├®-diagnostic avec interface fluide |
+| Consultation et validation des devis (Client) | Ô£à | Acceptation ÔåÆ r├®paration auto |
 
 ---
 
 ## 4. Bilan Global des Sprints
 
-| Sprint | Module | Points planifiés | Points livrés | Complétion |
+| Sprint | Module | Points planifi├®s | Points livr├®s | Compl├®tion |
 |---|---|---|---|---|
-| **Sprint 1** | Fondations Sécurisées | 14 pts | 14 pts | ✅ 100% |
-| **Sprint 2** | Essentiels Opérationnels | 17 pts | 17 pts | ✅ 100% |
-| **Sprint 3** | Contrôle de l'Application | 10 pts | 10 pts | ✅ 100% |
-| | **TOTAL** | **41 pts** | **41 pts** | **✅ 100%** |
+| **Sprint 1** | Fondations S├®curis├®es | 14 pts | 14 pts | Ô£à 100% |
+| **Sprint 2** | Essentiels Op├®rationnels | 17 pts | 17 pts | Ô£à 100% |
+| **Sprint 3** | Contr├┤le de l'Application | 10 pts | 10 pts | Ô£à 100% |
+| | **TOTAL** | **41 pts** | **41 pts** | **Ô£à 100%** |
 
-**Vélocité de l'équipe** : 41 points sur 3 sprints, attestant de la fiabilité des estimations et de la rigueur du processus Scrum.
+**V├®locit├® de l'├®quipe** : 41 points sur 3 sprints, attestant de la fiabilit├® des estimations et de la rigueur du processus Scrum.
 
 ---
 
 ## 5. Tests et Validation
 
-La phase de tests valide la conformité de la plateforme AutoExpert aux exigences définies. Trois types de tests ont été réalisés :
+La phase de tests valide la conformit├® de la plateforme AutoExpert aux exigences d├®finies. Trois types de tests ont ├®t├® r├®alis├®s :
 
-### 5.1 Tests Fonctionnels (20 cas)
+### 5.1 Tests Fonctionnels (15 cas)
 
-| ID | Cas de test | Données d'entrée | Résultat attendu | Statut |
+| ID | Cas de test | Donn├®es d'entr├®e | R├®sultat attendu | Statut |
 |---|---|---|---|---|
-| **TF-01** | Inscription email valide | Nom, email, téléphone, mot de passe corrects | Compte créé, JWT retourné, redirection dashboard | ✅ |
-| **TF-02** | Inscription email existant | Email déjà enregistré | Message « Cet email est déjà utilisé » | ✅ |
-| **TF-03** | Connexion identifiants corrects | Email et mot de passe valides | JWT généré, redirection selon rôle | ✅ |
-| **TF-04** | Connexion mauvais mot de passe | Mot de passe incorrect | Message « Email ou mot de passe incorrect » | ✅ |
-| **TF-05** | Connexion compte bloqué | Compte désactivé par l'admin | Message « Compte désactivé » | ✅ |
-| **TF-06** | Réinitialisation MDP — email valide | Email existant en base | Email reçu avec lien sécurisé (< 30s) | ✅ |
-| **TF-07** | Réinitialisation MDP — lien expiré | Token > 1 heure | Message « Lien expiré » | ✅ |
-| **TF-08** | Ajout véhicule — plaque unique | Immatriculation non enregistrée | Véhicule créé et listé | ✅ |
-| **TF-09** | Ajout véhicule — plaque dupliquée | Immatriculation déjà enregistrée | Erreur « Immatriculation existante » | ✅ |
-| **TF-10** | Création réservation | Véhicule + service + date | Réservation créée (statut « En attente ») | ✅ |
-| **TF-11** | Validation réservation par admin | Réservation en attente | Statut → « Acceptée » | ✅ |
-| **TF-12** | Création devis avec calcul total | 3 articles × 50 TND l'un | Total = 150 TND calculé automatiquement | ✅ |
-| **TF-13** | Acceptation devis par client | Devis en attente | Réparation créée automatiquement (statut « En cours ») | ✅ |
-| **TF-14** | Chat IA — symptôme automobile | Description de panne véhicule | Pré-diagnostic retourné (~8 s) | ✅ |
-| **TF-15** | Évolution statut réparation | En cours → Terminée | Statut mis à jour en base, visible par client | ✅ |
-| **TF-16** | Archivage service avec réservations actives | Suppression d'un service lié à une réservation pending | Service archivé (`archivedAt = new Date()`) au lieu de supprimé | ✅ |
-| **TF-17** | Suppression service sans réservations | Suppression d'un service sans références | Service supprimé complètement de la base | ✅ |
-| **TF-18** | Client essaie réserver service archivé | POST /api/reservations avec serviceId archivé | Erreur 400: "Service archivé et ne peut plus recevoir de réservations" | ✅ |
-| **TF-19** | Réactivation service archivé | PUT /api/admin/services/:id/reactivate | Service réactivé (`archivedAt = null`), visible pour clients | ✅ |
-| **TF-20** | Service archivé invisible clients | GET /api/services (endpoint public) | Liste affiche uniquement services avec `archivedAt === null` | ✅ |
+| **TF-01** | Inscription email valide | Nom, email, t├®l├®phone, mot de passe corrects | Compte cr├®├®, JWT retourn├®, redirection dashboard | Ô£à |
+| **TF-02** | Inscription email existant | Email d├®j├á enregistr├® | Message ┬½ Cet email est d├®j├á utilis├® ┬╗ | Ô£à |
+| **TF-03** | Connexion identifiants corrects | Email et mot de passe valides | JWT g├®n├®r├®, redirection selon r├┤le | Ô£à |
+| **TF-04** | Connexion mauvais mot de passe | Mot de passe incorrect | Message ┬½ Email ou mot de passe incorrect ┬╗ | Ô£à |
+| **TF-05** | Connexion compte bloqu├® | Compte d├®sactiv├® par l'admin | Message ┬½ Compte d├®sactiv├® ┬╗ | Ô£à |
+| **TF-06** | R├®initialisation MDP ÔÇö email valide | Email existant en base | Email re├ºu avec lien s├®curis├® (< 30s) | Ô£à |
+| **TF-07** | R├®initialisation MDP ÔÇö lien expir├® | Token > 1 heure | Message ┬½ Lien expir├® ┬╗ | Ô£à |
+| **TF-08** | Ajout v├®hicule ÔÇö plaque unique | Immatriculation non enregistr├®e | V├®hicule cr├®├® et list├® | Ô£à |
+| **TF-09** | Ajout v├®hicule ÔÇö plaque dupliqu├®e | Immatriculation d├®j├á enregistr├®e | Erreur ┬½ Immatriculation existante ┬╗ | Ô£à |
+| **TF-10** | Cr├®ation r├®servation | V├®hicule + service + date | R├®servation cr├®├®e (statut ┬½ En attente ┬╗) | Ô£à |
+| **TF-11** | Validation r├®servation par admin | R├®servation en attente | Statut ÔåÆ ┬½ Accept├®e ┬╗ | Ô£à |
+| **TF-12** | Cr├®ation devis avec calcul total | 3 articles ├ù 50 TND l'un | Total = 150 TND calcul├® automatiquement | Ô£à |
+| **TF-13** | Acceptation devis par client | Devis en attente | R├®paration cr├®├®e automatiquement (statut ┬½ En cours ┬╗) | Ô£à |
+| **TF-14** | Chat IA ÔÇö sympt├┤me automobile | Description de panne v├®hicule | Pr├®-diagnostic retourn├® (~8 s) | Ô£à |
+| **TF-15** | ├ëvolution statut r├®paration | En cours ÔåÆ Termin├®e | Statut mis ├á jour en base, visible par client | Ô£à |
 
-### 5.2 Tests de Sécurité (7 cas)
+### 5.2 Tests de S├®curit├® (6 cas)
 
-| Test | Description | Résultat |
+| Test | Description | R├®sultat |
 |---|---|---|
-| **Accès route Admin sans token JWT** | GET /api/admin/clients sans Authorization | HTTP 401 Unauthorized ✅ |
-| **Accès route Admin avec token Client** | Token rôle « client » sur route « admin » | HTTP 403 Forbidden ✅ |
-| **Tentative d'injection NoSQL** | {email: {"$gt": ""}} dans champ login | Rejeté par validation Mongoose ✅ |
-| **Token JWT falsifié** | Modification manuelle du payload JWT | Signature invalide, accès refusé ✅ |
-| **Vérification stockage mots de passe** | Lecture directe en base MongoDB | Hash Bcrypt (60 caractères) confirmé ✅ |
-| **Réutilisation lien réinitialisation** | Clic sur lien déjà utilisé | Message « Lien expiré ou déjà utilisé » ✅ |
-| **Validation archivage côté backend** | Client POST réservation sur service archivé | Validation Mongoose + requête DB vérifiée ✅ |
+| **Acc├¿s route Admin sans token JWT** | GET /api/admin/clients sans Authorization | HTTP 401 Unauthorized Ô£à |
+| **Acc├¿s route Admin avec token Client** | Token r├┤le ┬½ client ┬╗ sur route ┬½ admin ┬╗ | HTTP 403 Forbidden Ô£à |
+| **Tentative d'injection NoSQL** | {email: {"$gt": ""}} dans champ login | Rejet├® par validation Mongoose Ô£à |
+| **Token JWT falsifi├®** | Modification manuelle du payload JWT | Signature invalide, acc├¿s refus├® Ô£à |
+| **V├®rification stockage mots de passe** | Lecture directe en base MongoDB | Hash Bcrypt (60 caract├¿res) confirm├® Ô£à |
+| **R├®utilisation lien r├®initialisation** | Clic sur lien d├®j├á utilis├® | Message ┬½ Lien expir├® ou d├®j├á utilis├® ┬╗ Ô£à |
 
 ### 5.3 Tests de Performance (6 mesures)
 
-| Page / Endpoint | Temps moyen | Optimisation appliquée |
+| Page / Endpoint | Temps moyen | Optimisation appliqu├®e |
 |---|---|---|
 | Page d'accueil (React SPA) | ~0.8 s | Vite + code splitting React |
 | POST /api/auth/login | ~150 ms | Index MongoDB sur email |
-| GET /api/vehicles/mine | ~80 ms | Filtrage par userId indexé |
-| GET /api/reparations/mine | ~120 ms | Populate limité aux champs nécessaires |
-| GET /api/admin/dashboard | ~200 ms | Agrégation MongoDB optimisée |
-| POST /api/chat/diagnose (IA) | ~5 à 12 s | Réponse progressive (Ollama) |
+| GET /api/vehicles/mine | ~80 ms | Filtrage par userId index├® |
+| GET /api/reparations/mine | ~120 ms | Populate limit├® aux champs n├®cessaires |
+| GET /api/admin/dashboard | ~200 ms | Agr├®gation MongoDB optimis├®e |
+| POST /api/chat/diagnose (IA) | ~5 ├á 12 s | R├®ponse progressive (Ollama) |
 
-**Conclusion des tests** : Toutes les pages (hors Chat IA) respectent le temps de réponse cible < 2 secondes. Le Chat IA utilise une architecture asynchrone pour rendre l'attente acceptable à l'utilisateur.
-
----
-
-## 5. Système d'Archivage Intelligent des Services
-
-### Objectif et Justification
-
-Le système d'archivage des services résout un problème critique en gestion de données : **Comment arrêter de proposer un service SANS perdre l'historique des réservations existantes ?**
-
-**Situation problématique** ❌:
-- Admin supprime un service → Les 10 réservations existantes deviennent orphelines
-- Base de données incohérente → Réparations non éligibles au devis
-- Clients ne retrouvent plus leurs commandes
-
-**Solution implémentée** ✅:
-- Champ `archivedAt: Date | null` dans le modèle Service
-- Archivage intelligent : logic métier pour décider entre archivage et suppression
-- Protections multicouches : frontend + backend
-
-### Architecture Technique
-
-**Champ de base de données** (Service Schema):
-```json
-{
-  "name": "Révision moteur",
-  "basePrice": 150,
-  "estimatedTime": "2h",
-  "category": "Entretien",
-  "archivedAt": null  // Actif
-}
-```
-
-État du service déterminé par `archivedAt`:
-- `archivedAt === null` → Service **ACTIF** (visible + réservable)
-- `archivedAt !== null` → Service **ARCHIVÉ** (masqué clients + non réservable)
-
-### Routes API Backend
-
-**1. Suppression intelligente** : `DELETE /api/admin/services/:id`
-```
-Si réservations actives (pending ou accepted) existent :
-  → archivedAt = new Date()  [Archivage forcé]
-  → Réponse: { message: "Service archivé", archived: true }
-Sinon :
-  → findByIdAndDelete()  [Suppression définitive]
-  → Réponse: { message: "Service supprimé complètement", deleted: true }
-```
-
-**2. Archivage explicite** : `PUT /api/admin/services/:id/archive`
-```
-archivedAt = new Date()
-Résultat: Service masqué pour nouveaux clients, historique conservé
-```
-
-**3. Réactivation** : `PUT /api/admin/services/:id/reactivate`
-```
-archivedAt = null
-Résultat: Service réapparaît dans liste customers
-```
-
-**4. Affichage public** : `GET /api/services`
-```
-Requête: Service.find({ archivedAt: null })
-Résultat: Seuls les services ACTIFS affichés aux clients
-Base de données côté admin: Tous les services (archivés inclus) visibles
-```
-
-### Protections de Sécurité
-
-**Niveau Frontend** : 
-- Route `GET /api/services` filtre `archivedAt === null`
-- UI admin affiche les services archivés avec badge "⊘ Archivé" (opacité 75%)
-- Liste déroulante "Choisir un service" affiche seulement les actifs
-
-**Niveau Backend** (Validation stricte):
-- Route `POST /api/reservations` vérifie : si `serviceId` fourni → `archivedAt === null`?
-- Erreur 400 : **"Ce service est archivé et ne peut plus recevoir de réservations"**
-- Impossible de contourner même en POST brut
-
-### Matrice de Décision : Archivage vs Suppression
-
-| Cas | Réservations actives ? | Action | Bénéfice |
-|---|---|---|---|
-| Nouveau service (zéro numérique) | Non | Supprimé | DB propre |
-| Service saisonnier (fin saison) | Oui (15 clients) | Archivé | Historique préservé |
-| Service suite erreur création | Non | Supprimé | Pas de clutter |
-| Service retiré temporairement | Oui | Archivé | Récupération possible (Reactivate) |
-
-### Flux Utilisateur : Gestion des Services
-
-**Admin voit** 📊:
-```
-[Catalogue avec 47 services]
-├─ 45 services ACTIFS (badge vert ✓)
-│  ├─ Bouton 📦 Archive (pour archiver)
-│  └─ Bouton 🗑️ Delete (supprime ou archive selon réservations)
-└─ 2 services ARCHIVÉS (badge orange ⊘)
-   └─ Bouton ✓ Reactivate (pour réactiver)
-```
-
-**Client voit** 👥:
-```
-[Formulaire de réservation]
-├─ Liste services disponibles (45 actifs)
-│  └─ Client sélectionne et réserve
-└─ Services archivés = INVISIBLE
-   (Client ne sait pas qu'ils existent)
-```
-
-**Historique des réservations** 📋:
-```
-Client peut consultaire "Mes réservations" 
-  → Voit les réservations MÊME SI le service est archivé
-  → Peut suivre la réparation jusqu'à livraison
-```
-
-### Bénéfices de ce Système
-
-| Bénéfice | Impact |
-|---|---|
-| **Intégrité des données** | Aucune réservation orpheline |
-| **Audit & Traçabilité** | Timestamp `archivedAt` enregistré |
-| **Récupération** | Réactivation en un clic si décision annulée |
-| **Expérience client** | Historique reste consultable |
-| **Performance** | Pas de migration de données requise |
-| **Conformité** | Respect des données existantes |
+**Conclusion des tests** : Toutes les pages (hors Chat IA) respectent le temps de r├®ponse cible < 2 secondes. Le Chat IA utilise une architecture asynchrone pour rendre l'attente acceptable ├á l'utilisateur.
 
 ---
 
 ## 6. Conclusion
 
-Ce chapitre a présenté la phase de réalisation et validation de la plateforme **AutoExpert**, construite itérativement sur trois sprints Scrum d'une semaine chacun.
+Ce chapitre a pr├®sent├® la phase de r├®alisation et validation de la plateforme **AutoExpert**, construite it├®rativement sur trois sprints Scrum d'une semaine chacun.
 
-### Synthèse des livrables
+### Synth├¿se des livrables
 
-**🔐 Sprint 1 — Fondations Sécurisées** (14 pts)
+**­ƒöÉ Sprint 1 ÔÇö Fondations S├®curis├®es** (14 pts)
 - Authentification JWT + Bcrypt
 - Interface d'accueil et tableaux de bord
 - Catalogue de services
 - Gestion des comptes client et administrateur
 
-**📱 Sprint 2 — Essentiels Opérationnels** (17 pts)
-- Gestion complète des véhicules (CRUD)
-- Workflow réservation : Client → Admin → Validation
+**­ƒô▒ Sprint 2 ÔÇö Essentiels Op├®rationnels** (17 pts)
+- Gestion compl├¿te des v├®hicules (CRUD)
+- Workflow r├®servation : Client ÔåÆ Admin ÔåÆ Validation
 - Gestion des devis avec calcul automatique
-- Déclenchement automatique des réparations
+- D├®clenchement automatique des r├®parations
 
-**🤖 Sprint 3 — Contrôle de l'Application** (10 pts)
-- Chat IA de pré-diagnostic (Ollama llama3.1)
-- Suivi complet des réparations avec timeline
+**­ƒñû Sprint 3 ÔÇö Contr├┤le de l'Application** (10 pts)
+- Chat IA de pr├®-diagnostic (Ollama llama3.1)
+- Suivi complet des r├®parations avec timeline
 - Tableau de bord analytique avec graphiques
 - Architecture performante et maintenable
 
 ### Architecture et technologie
 
 L'architecture **MERN** (MongoDB, Express, React, Node.js) a offert un cadre :
-- ✅ **Moderne** : technologies à jour et widely adopted
-- ✅ **Performant** : temps de réponse < 2s (hors IA)
-- ✅ **Maintenable** : structure modulaire et documentée
-- ✅ **Sécurisé** : authentification robuste et validation des données
+- Ô£à **Moderne** : technologies ├á jour et widely adopted
+- Ô£à **Performant** : temps de r├®ponse < 2s (hors IA)
+- Ô£à **Maintenable** : structure modulaire et document├®e
+- Ô£à **S├®curis├®** : authentification robuste et validation des donn├®es
 
-### Résultats de validation
+### R├®sultats de validation
 
-- ✅ **20 tests fonctionnels** : 100% réussite (incluant archivage intelligent des services)
-- ✅ **7 tests sécurité** : 100% réussite
-- ✅ **6 mesures performance** : cibles atteintes
-- ✅ **41/41 points planifiés** : taux de complétion 100%
+- Ô£à **15 tests fonctionnels** : 100% r├®ussite
+- Ô£à **6 tests s├®curit├®** : 100% r├®ussite
+- Ô£à **6 mesures performance** : cibles atteintes
+- Ô£à **41/41 points planifi├®s** : taux de compl├®tion 100%
 
-### Valeur ajoutée
+### Valeur ajout├®e
 
-**AutoExpert** est la première plateforme de gestion de garage à intégrer :
-1. **Intelligence artificielle de pré-diagnostic** (Ollama llama3.1) directement accessible au client
-2. **Système d'archivage intelligent des services** : préserve l'historique sans créer de références orphelines
-3. **Interface administrateur riche** : tableau de bord analytique avec contrôle granulaire des ressources
-
-Ces innovations comblent les lacunes identifiées dans les solutions existantes (Drivvo, Shopmonkey).
+**AutoExpert** est la premi├¿re plateforme de gestion de garage ├á int├®grer une **intelligence artificielle de pr├®-diagnostic** directement accessible au client, comblant les lacunes identifi├®es dans les solutions existantes (Drivvo, Shopmonkey).
 
 ---
 
