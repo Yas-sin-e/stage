@@ -115,9 +115,10 @@ Ce niveau détaille chaque cas global en actions concrètes :
 │ • _id: ObjectId (PK)               │
 │ • name: String (requis)            │
 │ • description: String              │
-│ • price: Number (requis)           │
-│ • duration: String (ex: "2h")      │
+│ • basePrice: Number (requis)       │
+│ • estimatedTime: String (ex: "2h") │
 │ • category: String (requis)        │
+│ • archivedAt: Date? (null si actif)│
 │ • createdAt: Date                  │
 │ • updatedAt: Date                  │
 └─────────────────────────────────────┘
@@ -178,16 +179,42 @@ Le Sprint 1 livre 9 interfaces principales :
 - Sauvegarde sécurisée via requête PUT (middleware JWT)
 
 #### 8. Gestion des Services (Admin)
-- Catalogue en cartes : nom, catégorie (badge coloré), prix, durée
+
+**Objectif** : Gérer le catalogue des prestations du garage avec **archivage intelligent** pour préserver l'historique tout en contrôlant les nouvelles réservations.
+
+**Interface Principale**:
+- Catalogue en cartes : nom, catégorie (badge coloré), prix (basePrice), durée estimée
 - Création via formulaire modal
 - Modification et édition pour chaque service
-- **Statut visuel** : badge « Actif » (vert) ou « Archivé » (orange)
-- **Archivage intelligent** : 
-  - Bouton 📦 (Archive) pour archiver les services actifs
-  - Si des réservations actives existent → archivage automatique (au lieu de suppression)
-  - Bouton ✓ (Réactiver) visible pour les services archivés
-- **Suppression** : possible uniquement si aucune réservation active n'est liée
-- Codes couleurs pour l'état : vert actif, gris archivé
+
+**Système d'Archivage Intelligent** 📦:
+
+Le système d'archivage utilise un champ `archivedAt` (Date | null) pour distinguer les services :
+
+| État | `archivedAt` | Visible ? | Réservable ? | Action Admin |
+|---|---|---|---|---|
+| **Actif** | `null` | ✅ Oui | ✅ Oui | Bouton 📦 Archive |
+| **Archivé** | `Date` | ❌ Non (aux clients) | ❌ Non | Bouton ✓ Reactivate |
+
+**Logique de suppression intelligente**:
+- **Suppression simple** : Si aucune réservation active n'est liée → Service supprimé complètement
+- **Archivage forcé** : Si des réservations (pending/accepted) existent → `archivedAt = now()` (pas de suppression)
+- **Sécurité client** : Le client NE PEUT PAS réserver un service archivé (validation backend)
+
+**Détails des boutons**:
+- 📦 **Archive** : Marque le service comme archivé (`archivedAt = new Date()`)
+- ✓ **Reactivate** : Réactive un service archivé (`archivedAt = null`)
+- 🗑️ **Delete** : Supprime ou archive selon les réservations actives
+- ✎ **Edit** : Modifie les informations du service
+
+**Avec codes couleurs**:
+- Badge vert **"✓ Actif"** pour services actifs
+- Badge orange **"⊘ Archivé"** pour services archivés (visibles admin seulement)
+- Opacité réduite (75%) pour services archivés dans l'interface admin
+
+**Flux pour clients**:
+- Route `GET /api/services` affiche **seulement** les services avec `archivedAt === null`
+- Les anciens clients peuvent consulter l'historique de leurs réservations, même si le service est archivé
 
 #### 9. Gestion des Clients (Admin)
 - Tableau paginé : nom, email, téléphone, date d'inscription, statut
@@ -528,7 +555,7 @@ Le troisième sprint introduit les fonctionnalités différenciatrices : le syst
 
 La phase de tests valide la conformité de la plateforme AutoExpert aux exigences définies. Trois types de tests ont été réalisés :
 
-### 5.1 Tests Fonctionnels (17 cas)
+### 5.1 Tests Fonctionnels (20 cas)
 
 | ID | Cas de test | Données d'entrée | Résultat attendu | Statut |
 |---|---|---|---|---|
@@ -547,10 +574,13 @@ La phase de tests valide la conformité de la plateforme AutoExpert aux exigence
 | **TF-13** | Acceptation devis par client | Devis en attente | Réparation créée automatiquement (statut « En cours ») | ✅ |
 | **TF-14** | Chat IA — symptôme automobile | Description de panne véhicule | Pré-diagnostic retourné (~8 s) | ✅ |
 | **TF-15** | Évolution statut réparation | En cours → Terminée | Statut mis à jour en base, visible par client | ✅ |
-| **TF-16** | Archivage service avec réservations actives | Suppression d'un service lié à une réservation pending | Service archivé au lieu de supprimé — isActive = false | ✅ |
+| **TF-16** | Archivage service avec réservations actives | Suppression d'un service lié à une réservation pending | Service archivé (`archivedAt = new Date()`) au lieu de supprimé | ✅ |
 | **TF-17** | Suppression service sans réservations | Suppression d'un service sans références | Service supprimé complètement de la base | ✅ |
+| **TF-18** | Client essaie réserver service archivé | POST /api/reservations avec serviceId archivé | Erreur 400: "Service archivé et ne peut plus recevoir de réservations" | ✅ |
+| **TF-19** | Réactivation service archivé | PUT /api/admin/services/:id/reactivate | Service réactivé (`archivedAt = null`), visible pour clients | ✅ |
+| **TF-20** | Service archivé invisible clients | GET /api/services (endpoint public) | Liste affiche uniquement services avec `archivedAt === null` | ✅ |
 
-### 5.2 Tests de Sécurité (6 cas)
+### 5.2 Tests de Sécurité (7 cas)
 
 | Test | Description | Résultat |
 |---|---|---|
@@ -560,6 +590,7 @@ La phase de tests valide la conformité de la plateforme AutoExpert aux exigence
 | **Token JWT falsifié** | Modification manuelle du payload JWT | Signature invalide, accès refusé ✅ |
 | **Vérification stockage mots de passe** | Lecture directe en base MongoDB | Hash Bcrypt (60 caractères) confirmé ✅ |
 | **Réutilisation lien réinitialisation** | Clic sur lien déjà utilisé | Message « Lien expiré ou déjà utilisé » ✅ |
+| **Validation archivage côté backend** | Client POST réservation sur service archivé | Validation Mongoose + requête DB vérifiée ✅ |
 
 ### 5.3 Tests de Performance (6 mesures)
 
@@ -573,6 +604,132 @@ La phase de tests valide la conformité de la plateforme AutoExpert aux exigence
 | POST /api/chat/diagnose (IA) | ~5 à 12 s | Réponse progressive (Ollama) |
 
 **Conclusion des tests** : Toutes les pages (hors Chat IA) respectent le temps de réponse cible < 2 secondes. Le Chat IA utilise une architecture asynchrone pour rendre l'attente acceptable à l'utilisateur.
+
+---
+
+## 5. Système d'Archivage Intelligent des Services
+
+### Objectif et Justification
+
+Le système d'archivage des services résout un problème critique en gestion de données : **Comment arrêter de proposer un service SANS perdre l'historique des réservations existantes ?**
+
+**Situation problématique** ❌:
+- Admin supprime un service → Les 10 réservations existantes deviennent orphelines
+- Base de données incohérente → Réparations non éligibles au devis
+- Clients ne retrouvent plus leurs commandes
+
+**Solution implémentée** ✅:
+- Champ `archivedAt: Date | null` dans le modèle Service
+- Archivage intelligent : logic métier pour décider entre archivage et suppression
+- Protections multicouches : frontend + backend
+
+### Architecture Technique
+
+**Champ de base de données** (Service Schema):
+```json
+{
+  "name": "Révision moteur",
+  "basePrice": 150,
+  "estimatedTime": "2h",
+  "category": "Entretien",
+  "archivedAt": null  // Actif
+}
+```
+
+État du service déterminé par `archivedAt`:
+- `archivedAt === null` → Service **ACTIF** (visible + réservable)
+- `archivedAt !== null` → Service **ARCHIVÉ** (masqué clients + non réservable)
+
+### Routes API Backend
+
+**1. Suppression intelligente** : `DELETE /api/admin/services/:id`
+```
+Si réservations actives (pending ou accepted) existent :
+  → archivedAt = new Date()  [Archivage forcé]
+  → Réponse: { message: "Service archivé", archived: true }
+Sinon :
+  → findByIdAndDelete()  [Suppression définitive]
+  → Réponse: { message: "Service supprimé complètement", deleted: true }
+```
+
+**2. Archivage explicite** : `PUT /api/admin/services/:id/archive`
+```
+archivedAt = new Date()
+Résultat: Service masqué pour nouveaux clients, historique conservé
+```
+
+**3. Réactivation** : `PUT /api/admin/services/:id/reactivate`
+```
+archivedAt = null
+Résultat: Service réapparaît dans liste customers
+```
+
+**4. Affichage public** : `GET /api/services`
+```
+Requête: Service.find({ archivedAt: null })
+Résultat: Seuls les services ACTIFS affichés aux clients
+Base de données côté admin: Tous les services (archivés inclus) visibles
+```
+
+### Protections de Sécurité
+
+**Niveau Frontend** : 
+- Route `GET /api/services` filtre `archivedAt === null`
+- UI admin affiche les services archivés avec badge "⊘ Archivé" (opacité 75%)
+- Liste déroulante "Choisir un service" affiche seulement les actifs
+
+**Niveau Backend** (Validation stricte):
+- Route `POST /api/reservations` vérifie : si `serviceId` fourni → `archivedAt === null`?
+- Erreur 400 : **"Ce service est archivé et ne peut plus recevoir de réservations"**
+- Impossible de contourner même en POST brut
+
+### Matrice de Décision : Archivage vs Suppression
+
+| Cas | Réservations actives ? | Action | Bénéfice |
+|---|---|---|---|
+| Nouveau service (zéro numérique) | Non | Supprimé | DB propre |
+| Service saisonnier (fin saison) | Oui (15 clients) | Archivé | Historique préservé |
+| Service suite erreur création | Non | Supprimé | Pas de clutter |
+| Service retiré temporairement | Oui | Archivé | Récupération possible (Reactivate) |
+
+### Flux Utilisateur : Gestion des Services
+
+**Admin voit** 📊:
+```
+[Catalogue avec 47 services]
+├─ 45 services ACTIFS (badge vert ✓)
+│  ├─ Bouton 📦 Archive (pour archiver)
+│  └─ Bouton 🗑️ Delete (supprime ou archive selon réservations)
+└─ 2 services ARCHIVÉS (badge orange ⊘)
+   └─ Bouton ✓ Reactivate (pour réactiver)
+```
+
+**Client voit** 👥:
+```
+[Formulaire de réservation]
+├─ Liste services disponibles (45 actifs)
+│  └─ Client sélectionne et réserve
+└─ Services archivés = INVISIBLE
+   (Client ne sait pas qu'ils existent)
+```
+
+**Historique des réservations** 📋:
+```
+Client peut consultaire "Mes réservations" 
+  → Voit les réservations MÊME SI le service est archivé
+  → Peut suivre la réparation jusqu'à livraison
+```
+
+### Bénéfices de ce Système
+
+| Bénéfice | Impact |
+|---|---|
+| **Intégrité des données** | Aucune réservation orpheline |
+| **Audit & Traçabilité** | Timestamp `archivedAt` enregistré |
+| **Récupération** | Réactivation en un clic si décision annulée |
+| **Expérience client** | Historique reste consultable |
+| **Performance** | Pas de migration de données requise |
+| **Conformité** | Respect des données existantes |
 
 ---
 
@@ -610,14 +767,19 @@ L'architecture **MERN** (MongoDB, Express, React, Node.js) a offert un cadre :
 
 ### Résultats de validation
 
-- ✅ **17 tests fonctionnels** : 100% réussite
-- ✅ **6 tests sécurité** : 100% réussite
+- ✅ **20 tests fonctionnels** : 100% réussite (incluant archivage intelligent des services)
+- ✅ **7 tests sécurité** : 100% réussite
 - ✅ **6 mesures performance** : cibles atteintes
 - ✅ **41/41 points planifiés** : taux de complétion 100%
 
 ### Valeur ajoutée
 
-**AutoExpert** est la première plateforme de gestion de garage à intégrer une **intelligence artificielle de pré-diagnostic** directement accessible au client, comblant les lacunes identifiées dans les solutions existantes (Drivvo, Shopmonkey).
+**AutoExpert** est la première plateforme de gestion de garage à intégrer :
+1. **Intelligence artificielle de pré-diagnostic** (Ollama llama3.1) directement accessible au client
+2. **Système d'archivage intelligent des services** : préserve l'historique sans créer de références orphelines
+3. **Interface administrateur riche** : tableau de bord analytique avec contrôle granulaire des ressources
+
+Ces innovations comblent les lacunes identifiées dans les solutions existantes (Drivvo, Shopmonkey).
 
 ---
 

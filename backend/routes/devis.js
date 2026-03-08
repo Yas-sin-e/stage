@@ -6,12 +6,13 @@ const { protect } = require('../middleware/authMiddleware');
 const { adminOnly } = require('../middleware/adminMiddleware');
 
 // @route   GET /api/devis
-// @desc    Obtenir mes devis
+// @desc    Obtenir mes devis (avec services, même archivés)
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
     const devis = await Devis.find({ userId: req.user._id })
       .populate('vehicleId', 'brand model plate')
+      .populate('serviceId', 'name basePrice category archivedAt')
       .sort('-createdAt');
     res.json(devis);
   } catch (error) {

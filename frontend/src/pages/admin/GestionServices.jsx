@@ -83,8 +83,9 @@ const GestionServices = () => {
 
   const handleDelete = async (id) => {
     const service = services.find((s) => s._id === id);
+    const isArchived = service.archivedAt !== null;
     const confirmed = await showConfirm(
-      `${service.isActive ? "Archiver ou supprimer" : "Êtes-vous sûr de vouloir supprimer"} ce service ?`,
+      `${!isArchived ? "Archiver ou supprimer" : "Êtes-vous sûr de vouloir supprimer"} ce service ?`,
       "danger",
     );
     if (confirmed) {
@@ -184,7 +185,7 @@ const GestionServices = () => {
             <div
               key={service._id}
               className={`rounded-2xl p-6 hover:border-blue-500/50 transition-all backdrop-blur-sm border ${
-                service.isActive
+                service.archivedAt === null
                   ? "bg-slate-800/50 border-slate-700"
                   : "bg-slate-800/30 border-slate-600 opacity-75"
               }`}
@@ -200,12 +201,12 @@ const GestionServices = () => {
                   </span>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      service.isActive
+                      service.archivedAt === null
                         ? "bg-green-600/30 text-green-400 border border-green-500/50"
                         : "bg-amber-600/30 text-amber-400 border border-amber-500/50"
                     }`}
                   >
-                    {service.isActive ? "✓ Actif" : "⊘ Archivé"}
+                    {service.archivedAt === null ? "✓ Actif" : "⊘ Archivé"}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -216,7 +217,7 @@ const GestionServices = () => {
                   >
                     ✎
                   </button>
-                  {service.isActive ? (
+                  {service.archivedAt === null ? (
                     <>
                       <button
                         onClick={() => handleArchive(service._id)}

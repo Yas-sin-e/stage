@@ -7,8 +7,14 @@ let servicesCache = null;
 let cacheTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Fonction pour invalider le cache
+const invalidateCache = () => {
+  servicesCache = null;
+  cacheTime = 0;
+};
+
 // @route   GET /api/services
-// @desc    Obtenir tous les services actifs
+// @desc    Obtenir tous les services NON archivés (actifs et disponibles pour réservation)
 // @access  Public
 router.get('/', async (req, res) => {
   try {
@@ -19,7 +25,8 @@ router.get('/', async (req, res) => {
       return res.json(servicesCache);
     }
     
-    const services = await Service.find({ isActive: true }).sort('category name');
+    // Afficher uniquement les services non archivés (archivedAt === null)
+    const services = await Service.find({ archivedAt: null }).sort('category name');
     
     // Mettre à jour le cache
     servicesCache = services;
@@ -30,6 +37,9 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Ajouter la fonction au router pour l'exporter
+router.invalidateCache = invalidateCache;
 
 module.exports = router;
 

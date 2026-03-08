@@ -26,6 +26,10 @@ const serviceSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  archivedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

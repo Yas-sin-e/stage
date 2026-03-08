@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Reservation = require('../models/Reservation');
+const Service = require('../models/Service');
 const { protect } = require('../middleware/authMiddleware');
 
 // @route   GET /api/reservations
-// @desc    Obtenir mes réservations
+// @desc    Obtenir mes réservations (avec services, même archivés)
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
     const reservations = await Reservation.find({ userId: req.user._id })
       .populate('vehicleId', 'brand model plate')
-      .populate('serviceId', 'name')
+      .populate('serviceId', 'name basePrice category archivedAt')
       .sort('-createdAt');
     res.json(reservations);
   } catch (error) {
@@ -23,11 +24,25 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { customProblem, aiDiagnosis, ...rest } = req.body;
+    const { customProblem, aiDiagnosis, serviceId, ...rest } = req.body;
+    
+    // ✅ VALIDATION : Si un serviceId est fourni, vérifier qu'il n'est PAS archivé
+    if (serviceId) {
+      const service = await Service.findById(serviceId);
+      if (!service) {
+        return res.status(404).json({ message: 'Service non trouvé' });
+      }
+      if (service.archivedAt !== null) {
+        return res.status(400).json({ 
+          message: 'Ce service est archivé et ne peut plus recevoir de réservations' 
+        });
+      }
+    }
     
     const reservationData = {
       ...rest,
-      userId: req.user._id
+      userId: req.user._id,
+      serviceId: serviceId || null
     };
     
     if (customProblem) {

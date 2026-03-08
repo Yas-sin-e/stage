@@ -7,6 +7,10 @@ const Devis = require('../models/Devis');
 const Reparation = require('../models/Reparation');
 const Service = require('../models/Service');
 const { protect, adminOnly } = require('../middleware/adminMiddleware');
+const servicesRoute = require('./services');
+
+// Accéder à la fonction invalidateCache depuis le router des services
+const invalidateCache = servicesRoute.invalidateCache;
 
 // ✅ NE PAS utiliser router.use() ici
 // Appliquer les middlewares sur chaque route
@@ -104,7 +108,7 @@ router.get('/reservations', protect, adminOnly, async (req, res) => {
     const reservations = await Reservation.find()
       .populate('userId', 'name email phone')
       .populate('vehicleId', 'brand model plate')
-      .populate('serviceId', 'name basePrice')
+      .populate('serviceId', 'name basePrice category archivedAt')
       .sort('-createdAt');
     res.json(reservations);
   } catch (error) {
@@ -185,7 +189,7 @@ router.get('/devis', protect, adminOnly, async (req, res) => {
     const devis = await Devis.find()
       .populate('userId', 'name email phone')
       .populate('vehicleId', 'brand model plate')
-      .populate('serviceId', 'name category')
+      .populate('serviceId', 'name category archivedAt')
       .sort('-createdAt');
     res.json(devis);
   } catch (error) {
@@ -215,7 +219,7 @@ router.post('/devis', protect, adminOnly, async (req, res) => {
     const populated = await devis.populate([
       { path: 'userId', select: 'name email phone' },
       { path: 'vehicleId', select: 'brand model plate' },
-      { path: 'serviceId', select: 'name category icon' }
+      { path: 'serviceId', select: 'name category icon archivedAt' }
     ]);
 
     res.status(201).json(populated);
@@ -378,6 +382,7 @@ router.put('/reparations/:id/complete', protect, adminOnly, async (req, res) => 
 
 router.get('/services', protect, adminOnly, async (req, res) => {
   try {
+    // Afficher TOUS les services (archivés inclus) pour l'admin
     const services = await Service.find().sort('category name');
     res.json(services);
   } catch (error) {
@@ -388,6 +393,7 @@ router.get('/services', protect, adminOnly, async (req, res) => {
 router.post('/services', protect, adminOnly, async (req, res) => {
   try {
     const service = await Service.create(req.body);
+    invalidateCache();  // ✅ Invalider le cache
     res.status(201).json(service);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -404,14 +410,15 @@ router.put('/services/:id', protect, adminOnly, async (req, res) => {
     if (!service) {
       return res.status(404).json({ message: 'Service non trouvé' });
     }
+    invalidateCache();  // ✅ Invalider le cache
     res.json(service);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Archive ou supprime un service
-// Si des réservations actives existent → Archivage
+// Archive ou supprime un service intelligemment
+// Si des réservations actives existent → Archivage (archivedAt = now)
 // Sinon → Suppression complète
 router.delete('/services/:id', protect, adminOnly, async (req, res) => {
   try {
@@ -424,12 +431,13 @@ router.delete('/services/:id', protect, adminOnly, async (req, res) => {
     });
 
     if (activeReservations) {
-      // 2. Si oui → Archiver au lieu de supprimer
+      // 2. Si oui → Archiver au lieu de supprimer (marquer avec date)
       const service = await Service.findByIdAndUpdate(
         serviceId,
-        { isActive: false },
+        { archivedAt: new Date() },
         { new: true }
       );
+      invalidateCache();  // ✅ Invalider le cache
       return res.json({
         message: 'Service archivé (réservations actives détectées)',
         service,
@@ -439,6 +447,7 @@ router.delete('/services/:id', protect, adminOnly, async (req, res) => {
 
     // 3. Si non → Supprimer complètement
     await Service.findByIdAndDelete(serviceId);
+    invalidateCache();  // ✅ Invalider le cache
     res.json({ 
       message: 'Service supprimé complètement',
       deleted: true 
@@ -448,17 +457,18 @@ router.delete('/services/:id', protect, adminOnly, async (req, res) => {
   }
 });
 
-// Route spécifique pour archiver un service (sans le supprimer)
+// Route spécifique pour archiver un service (marquer avec archivedAt)
 router.put('/services/:id/archive', protect, adminOnly, async (req, res) => {
   try {
     const service = await Service.findByIdAndUpdate(
       req.params.id,
-      { isActive: false },
+      { archivedAt: new Date() },
       { new: true }
     );
     if (!service) {
       return res.status(404).json({ message: 'Service non trouvé' });
     }
+    invalidateCache();  // ✅ Invalider le cache
     res.json({ 
       message: 'Service archivé avec succès',
       service 
@@ -473,12 +483,13 @@ router.put('/services/:id/reactivate', protect, adminOnly, async (req, res) => {
   try {
     const service = await Service.findByIdAndUpdate(
       req.params.id,
-      { isActive: true },
+      { archivedAt: null },
       { new: true }
     );
     if (!service) {
       return res.status(404).json({ message: 'Service non trouvé' });
     }
+    invalidateCache();  // ✅ Invalider le cache
     res.json({ 
       message: 'Service réactivé avec succès',
       service 
