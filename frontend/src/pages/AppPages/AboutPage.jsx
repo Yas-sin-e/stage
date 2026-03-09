@@ -12,7 +12,7 @@ const AboutPage = () => {
       color: "from-blue-600 to-cyan-500",
     },
     {
-      number: "500+",
+      number: "100+",
       label: "Véhicules réparés",
       icon: "🔧",
       color: "from-green-600 to-emerald-500",
@@ -516,27 +516,7 @@ const AboutPage = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            <button
-              onClick={() => navigate("/register")}
-              className="group px-10 py-5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-lg font-bold transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/50 hover:scale-105"
-            >
-              <span className="flex items-center justify-center gap-2">
-                Réserver maintenant
-                <svg
-                  className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </span>
-            </button>
+            
 
             <button
               onClick={() => navigate("/services")}

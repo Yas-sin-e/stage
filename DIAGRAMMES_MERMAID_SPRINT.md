@@ -5,7 +5,7 @@
 ### Diagramme Global - Sprint 1
 
 ```mermaid
-usecaseDiagram
+usecase
     actor Visiteur
     actor Client
     actor Admin
@@ -30,7 +30,7 @@ usecaseDiagram
 ### Diagramme Raffiné - Sprint 1
 
 ```mermaid
-usecaseDiagram
+usecase
     actor V["Visiteur"]
     actor C["Client"]
     actor A["Administrateur"]
@@ -100,7 +100,7 @@ classDiagram
 ### Diagramme Global - Sprint 2
 
 ```mermaid
-usecaseDiagram
+usecase
     actor Client
     actor Admin
     
@@ -121,7 +121,7 @@ usecaseDiagram
 ### Diagramme Raffiné - Sprint 2
 
 ```mermaid
-usecaseDiagram
+usecase
     actor C["Client"]
     actor A["Administrateur"]
     
@@ -246,7 +246,7 @@ sequenceDiagram
 ### Diagramme Global - Sprint 3
 
 ```mermaid
-usecaseDiagram
+usecase
     actor Client
     actor Admin
     actor IA["Ollama (Intelligence Artificielle)"]
@@ -265,7 +265,7 @@ usecaseDiagram
 ### Diagramme Raffiné - Sprint 3
 
 ```mermaid
-usecaseDiagram
+usecase
     actor C["Client"]
     actor A["Administrateur"]
     actor LLM["Ollama llama3.1"]
