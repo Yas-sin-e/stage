@@ -22,20 +22,20 @@ Le Sprint 3 constitue la derniere phase de developpement du projet AutoExpert. I
 ### Diagram 1 : Use Case Global
 
 ```mermaid
-usecase
-    actor Client
-    actor Admin
-    actor IA["Ollama AI"]
+graph TD
+    Client[Client]
+    Admin[Admin]
+    IA[Ollama AI]
     
-    Client --> (Voir Suivi Reparations)
-    Client --> (Dialog Chat IA)
-    Client --> (Confirmer Reception)
+    Client -->|Action| US1[Voir Suivi Reparations]
+    Client -->|Action| US2[Dialog Chat IA]
+    Client -->|Action| US3[Confirmer Reception]
     
-    Admin --> (Changer Statut Reparation)
-    Admin --> (Ajouter Notes Tech)
-    Admin --> (Voir Dashboard Analytics)
+    Admin -->|Action| US4[Changer Statut Reparation]
+    Admin -->|Action| US5[Ajouter Notes Tech]
+    Admin -->|Action| US6[Voir Dashboard Analytics]
     
-    (Dialog Chat IA) --> IA
+    US2 -->|Communication| IA
 ```
 
 ---
@@ -43,18 +43,18 @@ usecase
 ### Diagram 2 : Use Case Raffine Client
 
 ```mermaid
-usecase
-    actor Client
-    actor IA["Ollama"]
+graph TD
+    Client[Client]
+    IA[Ollama IA]
     
-    Client --> (Decrire Symptomes)
-    (Decrire Symptomes) --> IA
-    IA --> (Generer Diagnostic)
-    (Generer Diagnostic) --> (Recommander Services)
+    Client -->|Decrit| DS[Decrire Symptomes]
+    DS -->|Envoie| IA
+    IA -->|Retourne| DG[Generer Diagnostic]
+    DG -->|Propose| RS[Recommander Services]
     
-    Client --> (Consulter Timeline Statut)
-    Client --> (Lire Notes Tech)
-    Client --> (Confirmer Reception)
+    Client -->|Consulte| TS[Consulter Timeline Statut]
+    Client -->|Lit| NT[Lire Notes Tech]
+    Client -->|Confirme| CR[Confirmer Reception]
 ```
 
 ---
@@ -62,19 +62,19 @@ usecase
 ### Diagram 3 : Use Case Raffine Admin
 
 ```mermaid
-usecase
-    actor Admin
+graph TD
+    Admin[Admin]
     
-    Admin --> (Changer Statut Reparation)
-    Admin --> (Ajouter Notes Tech)
-    Admin --> (Notifier Client)
+    Admin -->|Gestion| SR[Changer Statut Reparation]
+    Admin -->|Ajout| NT[Ajouter Notes Tech]
+    Admin -->|Alerte| NC[Notifier Client]
     
-    Admin --> (Voir KPI Clients)
-    Admin --> (Voir KPI Reservations)
-    Admin --> (Voir KPI Reparations)
-    Admin --> (Voir KPI Revenus)
-    Admin --> (Voir Graphiques)
-    Admin --> (Filtrer par Dates)
+    Admin -->|Analyse| KPI1[Voir KPI Clients]
+    Admin -->|Analyse| KPI2[Voir KPI Reservations]
+    Admin -->|Analyse| KPI3[Voir KPI Reparations]
+    Admin -->|Analyse| KPI4[Voir KPI Revenus]
+    Admin -->|Visuel| GR[Voir Graphiques]
+    Admin -->|Filtrage| FD[Filtrer par Dates]
 ```
 
 ---
