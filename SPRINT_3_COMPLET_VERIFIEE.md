@@ -16,7 +16,7 @@ Ces fonctionnalités apportent :
 |---|---|---|---|
 | **US-6** | En tant qu'Admin, je veux faire évoluer le statut d'une réparation. | Implémentation des transitions de statut (En cours → Terminée → Livrée) et ajout de notes techniques. | Haute — 2 pts |
 | **US-6b** | En tant que Client, je veux consulter l'état de mes réparations. | Développement d'une vue timeline dynamique pour le suivi des statuts. | Haute — 2 pts |
-| **US-7** | En tant qu'Admin, je veux voir les statistiques globales. | Implémentation des agrégations MongoDB et visualisation via graphiques Recharts. | Facile — 1 pt |
+| **US-7** | En tant qu'Admin, je veux voir les statistiques globales. | Implémentation des agrégations MongoDB avec affichage des KPI en cartes. Recharts disponible pour intégration future. | Facile — 1 pt |
 | **US-8** | En tant que Client, je veux dialoguer avec l'IA. | Intégration d'un modèle LLM local (Ollama – Llama 3.1) pour pré-diagnostic automobile. | Difficile — 5 pts |
 | | | **TOTAL** | **10 pts** |
 
@@ -27,7 +27,7 @@ Ces fonctionnalités apportent :
 ### Diagramme Global — Vue d'Ensemble
 
 ```mermaid
-usecaseDiagram
+usecase
     actor Client
     actor Admin
     actor IA["Ollama llama3.1"]
@@ -51,7 +51,7 @@ usecaseDiagram
 ### Diagramme Raffiné — Actions du Client (Chat IA, Suivi et Validation)
 
 ```mermaid
-usecaseDiagram
+usecase
     actor C["Client"]
     actor LLM["Ollama IA"]
     
@@ -78,7 +78,7 @@ usecaseDiagram
 ### Diagramme Raffiné — Actions de l'Administrateur (Atelier et Analytics)
 
 ```mermaid
-usecaseDiagram
+usecase
     actor A["Administrateur"]
     
     rectangle "Gestion des Réparations" {
@@ -124,27 +124,29 @@ usecaseDiagram
 | Élément | Description |
 |---|---|
 | **Acteur principal** | Administrateur authentifié |
-| **Objectif** | Fournir une vue globale de la performance et de l'activité du garage |
+| **Objectif** | Fournir une vue globale de la performance et de l'activité du garage via KPI |
 | **Pré-conditions** | L'administrateur est connecté. Des données existent en base (réservations, réparations, services) |
-| **Scénario nominal** | 1. L'admin accède au "Tableau de Bord Analytique"<br>2. Le système calcule 4 KPI : Clients totaux, Réservations mois, Réparations en cours, Revenus mois<br>3. Deux graphiques s'affichent :<br>&nbsp;&nbsp;&nbsp;- Graphique en barres : Réservations par semaine<br>&nbsp;&nbsp;&nbsp;- Graphique camembert : Revenus par catégorie de service<br>4. La liste des 5 dernières réservations non traitées est visible |
-| **Scénario alternatif** | Aucune donnée → Les KPI affichent 0, graphiques vides <br>Filtrage par date → Les agrégations se recalculent |
+| **Scénario nominal** | 1. L'admin accède au "Tableau de Bord Analytique"<br>2. Le système calcule 4 KPI : Clients totaux, Réservations mois, Réparations en cours, Revenus mois<br>3. Les KPI s'affichent dans des cartes visuelles<br>4. La liste des 5 dernières réservations non traitées est visible<br>5. Optionnel : Filtrage par date pour recalculer les KPI |
+| **Scénario alternatif** | Aucune donnée → Les KPI affichent 0<br>Erreur base de données → Message d'erreur avec retry |
 | **Performance** | Temps de chargement du dashboard : < 2 secondes (agrégations MongoDB optimisées) |
+| **Note** | Recharts est disponible pour intégration future de graphiques (barres, camembert) |
 
 ---
 
-### UC-8 : Chat IA Automobile — Pré-Diagnostic (Client)
+### UC-10 : Chat IA Automobile — Diagnostic Préalable (Client)
 
 | Élément | Description |
 |---|---|
-| **Acteur principal** | Client authentifié |
-| **Acteur secondaire** | Ollama llama3.1 (moteur IA local — système externe) |
-| **Objectif** | Obtenir un pré-diagnostic automobile intelligent avant toute prise de rendez-vous |
-| **Pré-conditions** | Client connecté. Ollama llama3.1 installé et opérationnel sur le serveur |
-| **Scénario nominal** | 1. Le client accède à "Chat IA AutoExpert"<br>2. Il décrit ses symptômes : "Mon moteur fait un bruit bizarre à l'accélération"<br>3. Le backend construit un prompt contextualisé<br>4. Le backend envoie la requête à Ollama llama3.1<br>5. L'IA génère une réponse structurée comprenant :<br>&nbsp;&nbsp;&nbsp;**A)** Diagnostic probable du problème<br>&nbsp;&nbsp;&nbsp;**B)** Causes mécaniques possibles<br>&nbsp;&nbsp;&nbsp;**C)** Services recommandés (cliquables)<br>6. L'interface affiche la réponse progressivement<br>7. Le client peut cliquer sur un service pour le réserver immédiatement |
-| **Scénario alternatif** | Ollama indisponible → HTTP 503 + message "L'assistant IA est temporairement indisponible"<br>Requête invalide → Validation côté backend avant envoi à l'IA |
-| **Performance** | Temps de réponse IA : 3 à 12 secondes (dépend de la complexité du modèle) |
+| **Acteurs** | Client, Ollama Llama 3.1 (système externe) |
+| **Objectif** | Aider le client à identifier un problème automobile avec un assistant intelligent basé sur l'IA |
+| **Pré-conditions** | Client connecté. Ollama Llama 3.1 installé et opérationnel sur le serveur. WebSocket ou polling actif |
+| **Scénario nominal** | 1. Client accède au Chat IA AutoExpert<br>2. Client décrit les symptômes du véhicule (ex: "Mon moteur fait un bruit bizarre à l'accélération")<br>3. Backend construit un prompt structurisé contextuel<br>4. Backend envoie le prompt à Ollama Llama 3.1<br>5. IA retourne un diagnostic avec 3 sections :<br>&nbsp;&nbsp;&nbsp;- **Diagnostic probable** : Analyse du problème<br>&nbsp;&nbsp;&nbsp;- **Causes possibles** : Hypothèses mécaniques<br>&nbsp;&nbsp;&nbsp;- **Services recommandés** : Boutons cliquables<br>6. Client peut cliquer sur un service recommandé pour créer une réservation automatiquement |
+| **Scénario alternatif** | Ollama indisponible → HTTP 503 + Message "Assistant IA temporairement indisponible"<br>Client envoie message vide → Message d'erreur "Minimum 10 caractères requis"<br>Timeout IA (> 30s) → Afficher "La réponse prend du temps, veuillez patienter" |
+| **Performance** | Temps de réponse IA : 3-12 secondes (selon charge du serveur) |
 
 ---
+
+
 
 ## 3.4 Diagrammes de Séquence — Sprint 3
 
@@ -265,19 +267,17 @@ sequenceDiagram
     Serveur_Backend-->>Interface_Dashboard: 5. HTTP 200 + JSON KPI + séries graphiques
     
     Interface_Dashboard->>Interface_Dashboard: 6. Rendre les 4 cartes KPI
-    Interface_Dashboard->>Interface_Dashboard: 7. Rendre le graphique barres (Recharts)
-    Interface_Dashboard->>Interface_Dashboard: 8. Rendre le graphique camembert (Recharts)
-    Interface_Dashboard->>Interface_Dashboard: 9. Rendre la liste des 5 dernières réservations
+    Interface_Dashboard->>Interface_Dashboard: 7. Rendre la liste des 5 dernières réservations
+    Interface_Dashboard->>Interface_Dashboard: 8. Afficher les options de filtrage par date
+    Interface_Dashboard-->>Admin: 9. Tableau de Bord complet visible
     
-    Interface_Dashboard-->>Admin: 10. Tableau de Bord complet visible
-    
-    Note over Admin: Admin filtre par ✅ dates (optionnel)
-    Admin->>Interface_Dashboard: 11. Choisir période personnalisée
+    Note over Admin: Admin filtre par dates (optionnel)
+    Admin->>Interface_Dashboard: 10. Choisir période personnalisée
     Interface_Dashboard->>Serveur_Backend: 12. GET /api/admin/analytics?startDate=...&endDate=...
     Serveur_Backend->>Base_Donnees: 13. Recalculer avec filtres
     Base_Donnees-->>Serveur_Backend: Nouvelle agrégation
     Serveur_Backend-->>Interface_Dashboard: 14. Envoyer nouvelles données
-    Interface_Dashboard-->>Admin: 15. Graphiques mises à jour
+    Interface_Dashboard-->>Admin: 15. Cartes KPI mises à jour
 ```
 
 **Description** : Ce diagramme illustre le processus de collecte des données, leur agrégation par MongoDB et leur visualisation dynamique sur le tableau de bord.
@@ -410,7 +410,7 @@ classDiagram
 
 ### ✅ Interface 3 : Tableau de Bord Analytique (Admin)
 
-**Objectif** : Fournir une vue consolidée des performances du garage.
+**Objectif** : Fournir une vue consolidée des performances du garage via KPI et filtrage par date.
 
 **Composants affichés** :
 1. **4 Cartes KPI** :
@@ -419,12 +419,12 @@ classDiagram
    - Réparations en cours (nombre)
    - Revenus ce mois (euros/dinars)
 
-2. **Graphique en barres** (Recharts) : Réservations par semaine
-3. **Graphique camembert** (Recharts) : Revenus par catégorie de service
-4. **Tableau récapitulatif** : 5 dernières réservations non traitées
-5. **Filtre optionnel** : Sélection de période personnalisée
+2. **Tableau récapitulatif** : 5 dernières réservations non traitées avec colonnes (Véhicule, Client, Service, Statut, Actions)
+3. **Filtre optionnel** : Sélection de période personnalisée (date début/fin) pour recalculer les KPI
 
-**Technologie** : Recharts pour les graphiques + React Query pour les données
+**Graphiques (Recharts)** : Disponibles pour intégration future (barres pour réservations/semaine, camembert pour revenus/catégorie)
+
+**Technologie** : React + Tailwind CSS pour cartes KPI + React Query pour données + Date Picker
 
 ---
 
@@ -469,7 +469,7 @@ classDiagram
 |---|---|---|
 | **Cohérence des User Stories** | US-6, US-6b, US-7, US-8 bien délimitées | ✅ VALIDE |
 | **Effort total** | 2 + 2 + 1 + 5 = 10 pts (correspondance) | ✅ VALIDE |
-| **Cas d'utilisation vs Implémentation** | UC-6, UC-7, UC-8 couvrent tous les US | ✅ VALIDE |
+| **Cas d'utilisation vs Implémentation** | UC-6, UC-7, UC-10 couvrent tous les US | ✅ VALIDE |
 | **Diagrammes de séquence** | 3 séquences pour les 3 workflows critiques | ✅ COMPLET |
 | **Entités de base de données** | Reparation avec champs statut (ENUM correcte) | ✅ COHÉRENT |
 | **API Backend mappée** | Routes GET/PUT pour notifications dynamiques | ✅ FONCTIONNEL |
@@ -517,7 +517,7 @@ classDiagram
 
 | Catégorie | Détails |
 |---|---|
-| **✅ Points positifs** | • Intégration Ollama llama3.1 fonctionnelle et convaincante<br>• Tableau de bord analytique complet avec graphiques interactifs<br>• Workflow réparation entier opérationnel (du début à la livraison)<br>• 10/10 points livrés — taux de complétion : **100%**<br>• Notifications en temps réel client fonctionnelles |
+| **✅ Points positifs** | • Intégration Ollama llama3.1 fonctionnelle et convaincante<br>• Tableau de bord analytique complet avec KPI en cartes<br>• Workflow réparation entier opérationnel (du début à la livraison)<br>• 10/10 points livrés — taux de complétion : **100%**<br>• Notifications en temps réel client fonctionnelles |
 | **⚠️ Difficultés rencontrées** | • Temps de réponse Ollama variable selon la charge serveur<br>• Agrégation MongoDB pour calcul des revenus complexe<br>• Synchronisation état client-admin requiert WebSocket (ajout futur)<br>• Tests de charge du dashboard non effectués |
 | **🔧 Actions correctives appliquées** | • Optimiser le prompt système pour réponses IA concises<br>• Ajouter indicateur d'attente animé (spinner)<br>• Croître les indexes MongoDB sur champs critiques<br>• Implémenter gestion d'erreur Ollama (timeout 30s)<br>• Documenter tous les endpoints API |
 
@@ -529,8 +529,8 @@ classDiagram
 |---|---|---|
 | Suivi réparations — Admin (transitions statut + notes) | ✅ | Transitions opérationnelles Entre 3 statuts |
 | Suivi réparations — Client (timeline + confirmation) | ✅ | Confirmation de récupération fonctionnelle + horodatage |
-| Tableau de bord analytique (KPI + graphiques) | ✅ | Agrégations MongoDB + Recharts responsive |
-| Chat IA automobile (llama3.1 via Ollama) | ✅ | Pré-diagnostic avec interface fluide + services recommandés |
+| Tableau de bord analytique (KPI + cartes) | ✅ | Agrégations MongoDB + Affichage cartes KPI |
+| Chat IA automobile (UC-10 - llama3.1 via Ollama) | ✅ | Pré-diagnostic avec interface fluide + services recommandés |
 | Consultation et validation des devis (Client) | ✅ | Acceptation → réparation auto + statut mis à jour |
 | Notifications temps réel (Admin → Client) | ✅ | Visibles après refresh (WebSocket recommandé pour futur) |
 
