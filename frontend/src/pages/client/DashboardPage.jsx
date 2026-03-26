@@ -57,7 +57,7 @@ const DashboardPage = () => {
         ),
       );
       setDevis(devisRes.data.filter((d) => d.status === "pending"));
-      // نعرض فقط الإصلاحات التي لم يتم تسليمها بعد (Active Tracking)
+      // نعرض فقط الإصلاحات النشطة (Suivi en temps réel) - pas les livrées
       setReparations(
         reparationsRes.data.filter((r) => r.status !== "delivered"),
       );
@@ -94,7 +94,6 @@ const DashboardPage = () => {
     if (window.confirm("Confirmer que vous avez récupéré votre véhicule ?")) {
       try {
         await api.put(`/reparations/${id}/recuperer`);
-        alert("Merci de votre confiance ! 🚗");
         fetchData();
       } catch (error) {
         alert("Erreur lors της validation");
@@ -350,6 +349,16 @@ const DashboardPage = () => {
                               <p className="text-slate-500 text-sm">
                                 {rep.service}
                               </p>
+                              {rep.technicianNotes && (
+                                <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                                  <p className="text-[10px] font-bold text-blue-400 uppercase">
+                                    📝 Notes du technicien
+                                  </p>
+                                  <p className="text-blue-100 text-sm mt-1">
+                                    {rep.technicianNotes}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                             <span
                               className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${style.bg} ${style.text} ${style.border}`}
@@ -364,6 +373,13 @@ const DashboardPage = () => {
                             >
                               RÉCUPÉRER MON VÉHICULE
                             </button>
+                          )}
+                          {rep.status === "delivered" && (
+                            <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                              <p className="text-green-400 font-bold text-center">
+                                ✅ Véhicule récupéré
+                              </p>
+                            </div>
                           )}
                         </div>
                       );

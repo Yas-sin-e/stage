@@ -10,7 +10,8 @@ const GestionReparations = () => {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const { toasts, showToast, removeToast } = useToast();
-  const { confirmState, showConfirm, handleConfirm, handleCancel } = useConfirm();
+  const { confirmState, showConfirm, handleConfirm, handleCancel } =
+    useConfirm();
 
   useEffect(() => {
     fetchReparations();
@@ -31,34 +32,38 @@ const GestionReparations = () => {
     try {
       await api.put(`/admin/reparations/${id}/start`);
       fetchReparations();
-      showToast('Réparation démarrée', 'success');
+      showToast("Réparation démarrée", "success");
     } catch (error) {
-      showToast('Erreur', 'error');
+      showToast("Erreur", "error");
     }
   };
 
   const handleComplete = async (id) => {
-    const notes = prompt("Notes de fin de réparation:");
+    const technicianNotes = prompt("Notes de fin de réparation:");
+    if (technicianNotes === null) return; // Annuler si dialogueclosé
     try {
-      await api.put(`/admin/reparations/${id}/complete`, { notes });
+      await api.put(`/admin/reparations/${id}/complete`, { technicianNotes });
       fetchReparations();
-      showToast('Réparation terminée', 'success');
+      showToast("Réparation terminée", "success");
     } catch (error) {
-      showToast('Erreur', 'error');
+      const errorMessage =
+        error.response?.data?.message || "Erreur lors de la terminaison";
+      showToast(errorMessage, "error");
     }
   };
-  const handleDeliver = async (id) => {
+
+  const handleDelete = async (id) => {
     const confirmed = await showConfirm(
-      "Confirmer que le véhicule a été récupéré par le client ?",
-      'info'
+      "Supprimer cette réparation terminée ?",
+      "danger",
     );
     if (confirmed) {
       try {
-        await api.put(`/admin/reparations/${id}/Livre`);
+        await api.delete(`/admin/reparations/${id}`);
         fetchReparations();
-        showToast('Véhicule livré au client', 'success');
+        showToast("Réparation supprimée", "success");
       } catch (error) {
-        showToast('Erreur lors de la livraison', 'error');
+        showToast("Erreur lors de la suppression", "error");
       }
     }
   };
@@ -275,17 +280,17 @@ const GestionReparations = () => {
                           </button>
                         )}
                         {rep.status === "completed" && (
-                          <button
-                            onClick={() => handleDeliver(rep._id)}
-                            className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-400 rounded-lg text-sm font-semibold transition-all"
-                          >
-                            Livrer au client
-                          </button>
+                          <span className="px-4 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-sm font-semibold inline-block">
+                            En attente du client
+                          </span>
                         )}
                         {rep.status === "delivered" && (
-                          <span className="px-4 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-sm font-semibold inline-block">
-                            Récupéré
-                          </span>
+                          <button
+                            onClick={() => handleDelete(rep._id)}
+                            className="px-4 py-2 bg-red-600/20 hover:bg-red-600 border border-red-500/50 text-red-400 rounded-lg text-sm font-semibold transition-all w-full"
+                          >
+                            Supprimer
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -296,7 +301,7 @@ const GestionReparations = () => {
           </div>
         </div>
       </div>
-      {toasts.map(toast => (
+      {toasts.map((toast) => (
         <Toast
           key={toast.id}
           message={toast.message}

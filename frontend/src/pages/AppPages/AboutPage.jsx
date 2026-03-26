@@ -185,7 +185,7 @@ const AboutPage = () => {
                   <span className="text-purple-400 font-bold">
                     assistant IA disponible 24/7
                   </span>
-                  , vous得到 :
+                  , vous avez :
                 </p>
                 <ul className="space-y-3 ml-6">
                   <li className="flex items-start gap-3">
@@ -516,8 +516,6 @@ const AboutPage = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            
-
             <button
               onClick={() => navigate("/services")}
               className="px-10 py-5 bg-white/5 border-2 border-white/20 hover:bg-white hover:text-slate-900 text-white rounded-xl text-lg font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm"

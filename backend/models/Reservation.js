@@ -22,16 +22,7 @@ const reservationSchema = new mongoose.Schema({
     default: ''
   },
   // Diagnostic IA - stocké ici pour être lié à la réservation
-  aiDiagnosis: {
-    description: String,        // Description du problème par l'IA
-    suggestedServices: [{
-      serviceName: String,
-      estimatedPrice: Number,
-      estimatedTime: String
-    }],
-    severity: String,           // low, medium, high
-    analyzedAt: Date
-  },
+
  
   date: {
     type: Date,

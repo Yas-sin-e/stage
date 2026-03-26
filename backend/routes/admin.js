@@ -354,6 +354,19 @@ router.put('/reparations/:id/start', protect, adminOnly, async (req, res) => {
 router.put('/reparations/:id/Livre', protect, adminOnly, async (req, res) => {
   try {
     const reparation = await Reparation.findById(req.params.id);
+    
+    if (!reparation) {
+      return res.status(404).json({ message: 'Réparation non trouvée' });
+    }
+    
+    if (reparation.status === 'delivered') {
+      return res.status(400).json({ message: 'Le véhicule est déjà livré' });
+    }
+    
+    if (reparation.status !== 'completed') {
+      return res.status(400).json({ message: 'La réparation doit être terminée avant livraison' });
+    }
+    
     reparation.status = 'delivered';
     reparation.deliveredAt = new Date();
     reparation.technicianNotes = req.body.technicianNotes || '';
@@ -371,6 +384,23 @@ router.put('/reparations/:id/complete', protect, adminOnly, async (req, res) => 
     reparation.technicianNotes = req.body.technicianNotes || '';
     await reparation.save();
     res.json(reparation);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// DELETE /admin/reparations/:id - Admin delete delivered repair
+router.delete('/reparations/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const reparation = await Reparation.findById(req.params.id);
+    if (!reparation) {
+      return res.status(404).json({ message: 'Réparation non trouvée' });
+    }
+    if (reparation.status !== 'delivered') {
+      return res.status(400).json({ message: "Seule les réparations livrées peuvent être supprimées" });
+    }
+    await Reparation.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Réparation supprimée avec succès' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
