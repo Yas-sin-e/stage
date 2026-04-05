@@ -4,7 +4,6 @@ const Devis = require('../models/Devis');
 const Reparation = require('../models/Reparation');
 const { protect } = require('../middleware/authMiddleware');
 const { adminOnly } = require('../middleware/adminMiddleware');
-
 // @route   GET /api/devis
 // @desc    Obtenir mes devis (avec services, même archivés)
 // @access  Private
@@ -19,7 +18,7 @@ router.get('/', protect, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
+// a verfier car il existe dans le module admin 
 // @route   PUT /api/devis/:id
 // @desc    Modifier un devis (admin)
 // @access  Private/Admin

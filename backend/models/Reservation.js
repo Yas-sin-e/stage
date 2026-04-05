@@ -21,7 +21,6 @@ const reservationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  // Diagnostic IA - stocké ici pour être lié à la réservation
 
  
   date: {

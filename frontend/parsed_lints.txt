@@ -1,0 +1,68 @@
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\App.jsx
+  Line 3: 'Toaster' is defined but never used.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\components\homeSection\HeroSection.jsx
+  Line 50: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\components\homeSection\ServicesSection.jsx
+  Line 94: 'index' is defined but never used.
+  Line 146: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\components\layout\Navbar.jsx
+  Line 292: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 494: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\context\auth\AuthProvider.jsx
+  Line 28: 'error' is defined but never used.
+  Line 36: Unnecessary try/catch wrapper.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\AppPages\AboutPage.jsx
+  Line 138: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 241: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 341: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 661: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\AppPages\LoginPage.jsx
+  Line 195: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\AppPages\ProfilePage.jsx
+  Line 21: 'setError' is assigned a value but never used.
+  Line 22: 'clearErrors' is assigned a value but never used.
+  Line 218: 'error' is defined but never used.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\AppPages\RegisterPage.jsx
+  Line 39: 'err' is defined but never used.
+  Line 78: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 301: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\admin\GestionClients.jsx
+  Line 44: 'error' is defined but never used.
+  Line 59: 'error' is defined but never used.
+  Line 66: 'handleOpenVehicles' is assigned a value but never used.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\admin\GestionDevis.jsx
+  Line 18: 'reservationData' is assigned a value but never used.
+  Line 38: 'watchItems' is assigned a value but never used.
+  Line 117: 'handleUpdateStatus' is assigned a value but never used.
+  Line 117: 'id' is defined but never used.
+  Line 117: 'newStatus' is defined but never used.
+  Line 128: 'error' is defined but never used.
+  Line 442: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\admin\GestionReparations.jsx
+  Line 36: 'error' is defined but never used.
+  Line 65: 'error' is defined but never used.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\admin\GestionReservations.jsx
+  Line 8: 'navigate' is assigned a value but never used.
+  Line 46: 'error' is defined but never used.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\client\DashboardPage.jsx
+  Line 25: 'reset' is assigned a value but never used.
+  Line 25: 'setValue' is assigned a value but never used.
+  Line 98: 'error' is defined but never used.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\client\DevisPage.jsx
+  Line 7: 'ConfirmModal' is defined but never used.
+  Line 11: 'user' is assigned a value but never used.
+  Line 16: 'confirmState' is assigned a value but never used.
+  Line 16: 'showConfirm' is assigned a value but never used.
+  Line 16: 'handleConfirm' is assigned a value but never used.
+  Line 16: 'handleCancel' is assigned a value but never used.
+  Line 52: 'error' is defined but never used.
+  Line 111: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 125: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 268: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\client\MyReservationsPage.jsx
+  Line 58: 'error' is defined but never used.
+  Line 80: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+  Line 93: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\yassi\OneDrive\Bureau\AutoExpert\frontend\src\pages\client\MyVehiclePage.jsx
+  Line 11: 'navigate' is assigned a value but never used.
+  Line 75: 'error' is defined but never used.

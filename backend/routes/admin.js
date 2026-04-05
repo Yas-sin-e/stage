@@ -12,8 +12,7 @@ const servicesRoute = require('./services');
 // Accéder à la fonction invalidateCache depuis le router des services
 const invalidateCache = servicesRoute.invalidateCache;
 
-// ✅ NE PAS utiliser router.use() ici
-// Appliquer les middlewares sur chaque route
+
 
 // ============================================
 // GESTION VÉHICULES (pour l'admin)
@@ -31,7 +30,7 @@ router.get('/vehicles', protect, adminOnly, async (req, res) => {
 });
 
 // ============================================
-// GESTION CLIENTS
+// GESTION CLIENTS supprimer/lister(client+vehile)
 // ============================================
 
 router.get('/clients', protect, adminOnly, async (req, res) => {
@@ -100,7 +99,7 @@ router.put('/clients/:id', protect, adminOnly, async (req, res) => {
   }
 });
 // ============================================
-// GESTION RÉSERVATIONS
+// GESTION RÉSERVATIONS accepter +devis /rejecter
 // ============================================
 
 router.get('/reservations', protect, adminOnly, async (req, res) => {
@@ -423,7 +422,7 @@ router.get('/services', protect, adminOnly, async (req, res) => {
 router.post('/services', protect, adminOnly, async (req, res) => {
   try {
     const service = await Service.create(req.body);
-    invalidateCache();  // ✅ Invalider le cache
+    invalidateCache();  
     res.status(201).json(service);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -435,7 +434,7 @@ router.put('/services/:id', protect, adminOnly, async (req, res) => {
     const service = await Service.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true }// le runValidators est important pour s'assurer que les données mises à jour respectent les contraintes du modèle (ex: price >= 0)
     );
     if (!service) {
       return res.status(404).json({ message: 'Service non trouvé' });
@@ -471,7 +470,7 @@ router.delete('/services/:id', protect, adminOnly, async (req, res) => {
       return res.json({
         message: 'Service archivé (réservations actives détectées)',
         service,
-        archived: true
+        archived: true 
       });
     }
 
@@ -498,7 +497,7 @@ router.put('/services/:id/archive', protect, adminOnly, async (req, res) => {
     if (!service) {
       return res.status(404).json({ message: 'Service non trouvé' });
     }
-    invalidateCache();  // ✅ Invalider le cache
+    invalidateCache();  // Invalider le cache
     res.json({ 
       message: 'Service archivé avec succès',
       service 
@@ -536,9 +535,12 @@ router.put('/services/:id/reactivate', protect, adminOnly, async (req, res) => {
 router.get('/stats', protect, adminOnly, async (req, res) => {
   try {
     
-    const revenue = await Reparation.aggregate([
-      { $match: { status: 'delivered' } },
+    const revenue = await Reparation.aggregate([// ici c'est meacnisme d eaggrgation pipline (filtrage + groupement) pour calculer le total des revenus générés par les réparations livrées
+      { $match: { status: 'delivered' } },// c'est filtrage de doucument suelement les repations livrees .
+      // Une réparation génère du revenu uniquement si elle est livrée
       { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+      //ici on fait un regroupment des documents avec application des calcul
+      //_id:null c'est a dire le id de groupement est null parce que on veut le total global et pas par catégorie ou autre critère et le total c'est le nom du champ calculé qui va contenir la somme de tous les montants totaux des réparations livrées
     ]);
 
     
@@ -556,6 +558,7 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
       // إضافة الأرباح هنا:
       totalRevenue: revenue[0]?.total || 0 
     };
+    //KPI métier : Chiffre d’affaires total 
 
     res.json(stats);
   } catch (error) {

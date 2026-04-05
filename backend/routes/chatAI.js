@@ -1,19 +1,24 @@
+const { Ollama } = require('ollama');
 const express = require('express');
 const router = express.Router();
-const { Ollama } = require('ollama');
 const { protect } = require('../middleware/authMiddleware');
+const Vehicle = require('../models/Vehicle');
 
 const ollama = new Ollama({
-  host: 'http://localhost:11434'
+  host: 'http://localhost:11434',
+  timeout: 60000
 });
 
-// Vérifier le statut d'Ollama et du modèle
+// Nettoyer les balises <thought>...</thought> des réponses IA
+function stripThoughtTags(text) {
+  return text.replace(/<thought>[\s\S]*?<\/thought>/gi, '').trim();
+}
+
+
 router.get('/ai/status', async (req, res) => {
   try {
-    // Vérifier si Ollama est accessible
     const listResponse = await ollama.list();
     const modelExists = listResponse.models.some(model => model.name.includes('autoexpert'));
-
     res.json({
       success: true,
       modelExists,
@@ -33,13 +38,18 @@ router.post('/ai', protect, async (req, res) => {
     const { messages } = req.body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({
-        message: 'Les messages sont requis'
-      });
+      return res.status(400).json({ message: 'Les messages sont requis' });
     }
 
-    // Convertir les messages frontend en format Ollama
-    const ollamaMessages = messages.map(msg => ({
+    // L'intelligence artificielle (Ollama) prendra désormais en charge
+    // la vérification conversationnelle des informations du véhicule
+    // grâce aux instructions du Modelfile.
+
+
+    const MAX_MESSAGES = 20;
+    const recentMessages = messages.slice(-MAX_MESSAGES);
+
+    const ollamaMessages = recentMessages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text.trim()
     }));
@@ -50,22 +60,14 @@ router.post('/ai', protect, async (req, res) => {
       stream: false
     });
 
-    res.json({
-      reply: response.message.content
-    });
+    res.json({ reply: stripThoughtTags(response.message.content) });
 
   } catch (error) {
     console.error('Erreur Ollama:', error);
-
-    res.status(500).json({
-      message: 'Erreur de communication avec AutoExpert'
-    });
+    res.status(500).json({ message: 'Erreur de communication avec AutoExpert' });
   }
 });
 
-// @route   POST /api/chat/diagnose
-// @desc    Analyser un problème de véhicule avec l'IA
-// @access  Private
 router.post('/diagnose', protect, async (req, res) => {
   try {
     const { problem, vehicleId } = req.body;
@@ -76,32 +78,26 @@ router.post('/diagnose', protect, async (req, res) => {
       });
     }
 
-    // Récupérer les infos du véhicule
-    const Vehicle = require('../models/Vehicle');
     const vehicle = await Vehicle.findById(vehicleId);
 
     if (!vehicle) {
       return res.status(404).json({ message: 'Véhicule non trouvé' });
     }
 
-    // Créer le prompt pour le diagnostic
-    const prompt = `Tu es un expert en mécanique automobile. Un client décrit un problème avec son véhicule:
+    const prompt = `[INSTRUCTION: Réponds UNIQUEMENT en JSON valide. Aucun texte avant ou après. Aucun emoji.]
+
+Véhicule:
 - Marque: ${vehicle.brand}
 - Modèle: ${vehicle.model}
 - Année: ${vehicle.year || 'Non spécifiée'}
 - Kilométrage: ${vehicle.kilometrage || 'Non spécifié'} km
-- Problème décrit: ${problem}
+- Problème: ${problem}
 
-Analyse ce problème et fournis:
-1. Une description courte du problème probable
-2. Les services suggérés (nom du service, prix estimé en TND, durée estimée)
-3. Le niveau de gravité (low, medium, high)
-
-Réponds en JSON avec ce format exact:
+Format JSON obligatoire:
 {
-  "description": "texte court",
+  "description": "description courte du problème",
   "suggestedServices": [
-    {"serviceName": "nom", "estimatedPrice": nombre, "estimatedTime": "durée"}
+    {"serviceName": "nom", "estimatedPrice": 0, "estimatedTime": "durée"}
   ],
   "severity": "low|medium|high"
 }`;
@@ -112,36 +108,34 @@ Réponds en JSON avec ce format exact:
       stream: false
     });
 
-    // Parser la réponse JSON
-    let diagnosis;
-    try {
-      const jsonMatch = response.message.content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        diagnosis = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('Pas de JSON trouvé');
+    function extractJSON(text) {
+      const matches = [...text.matchAll(/\{[\s\S]*?\}/g)];
+      for (const match of [...matches].reverse()) {
+        try {
+          const parsed = JSON.parse(match[0]);
+          if (parsed.description && parsed.severity) return parsed;
+        } catch {
+          continue;
+        }
       }
-    } catch (parseError) {
-      // Si le parsing échoue, créer une réponse par défaut
-      diagnosis = {
-        description: response.message.content.substring(0, 200),
-        suggestedServices: [
-          { serviceName: 'Diagnostic complet', estimatedPrice: 50, estimatedTime: '1h' }
-        ],
-        severity: 'medium'
-      };
+      return null;
     }
 
-    // Ajouter la date d'analyse
-    diagnosis.analyzedAt = new Date();
+    const cleanContent = stripThoughtTags(response.message.content);
+    const diagnosis = extractJSON(cleanContent) || {
+      description: cleanContent.substring(0, 200),
+      suggestedServices: [
+        { serviceName: 'Diagnostic complet', estimatedPrice: 50, estimatedTime: '1h' }
+      ],
+      severity: 'medium'
+    };
 
+    diagnosis.analyzedAt = new Date();
     res.json(diagnosis);
 
   } catch (error) {
     console.error('Erreur Ollama diagnose:', error);
-    res.status(500).json({
-      message: 'Erreur lors du diagnostic IA'
-    });
+    res.status(500).json({ message: 'Erreur lors du diagnostic IA' });
   }
 });
 

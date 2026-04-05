@@ -26,7 +26,7 @@ router.post('/', protect, async (req, res) => {
   try {
     const { customProblem, aiDiagnosis, serviceId, ...rest } = req.body;
     
-    // ✅ VALIDATION : Si un serviceId est fourni, vérifier qu'il n'est PAS archivé
+    //  VALIDATION : Si un serviceId est fourni, vérifier qu'il n'est PAS archivé
     if (serviceId) {
       const service = await Service.findById(serviceId);
       if (!service) {
@@ -48,7 +48,7 @@ router.post('/', protect, async (req, res) => {
     if (customProblem) {
       reservationData.customProblem = customProblem;
     }
-    
+    // n'est pas obligatoire
     if (aiDiagnosis) {
       reservationData.aiDiagnosis = aiDiagnosis;
     }
@@ -87,7 +87,7 @@ router.put('/:id', protect, async (req, res) => {
     const updatedReservation = await Reservation.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true }// ici je dit que je veux le document après modification et pas avant car par défaut c'est avant la modification
     ).populate([
       { path: 'vehicleId', select: 'brand model plate' },
       { path: 'serviceId', select: 'name' }

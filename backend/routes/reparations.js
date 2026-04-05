@@ -10,7 +10,7 @@ router.get('/', protect, async (req, res) => {
   try {
     const reparations = await Reparation.find({ userId: req.user._id })
       .populate('vehicleId', 'brand model plate')
-      .populate('devisId')
+      .populate('devisId')// ici on met tout les champs du devis pour pouvoir les afficher dans la partie client
       .sort('-createdAt');
     res.json(reparations);
   } catch (error) {

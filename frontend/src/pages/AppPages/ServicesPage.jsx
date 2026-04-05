@@ -90,7 +90,7 @@ const ServicesPage = () => {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            <span className="text-white font-medium">Retour à l'accueil</span>
+            <span className="text-white font-medium">Retour à l&apos;accueil</span>
           </button>
 
           {/* Title Section */}
@@ -274,7 +274,7 @@ const ServicesPage = () => {
 
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-            Besoin d'un service automobile ?
+            Besoin d&apos;un service automobile ?
           </h2>
           {/* Description - Taille augmentée */}
           <p className="text-2xl text-slate-300 mb-12 leading-relaxed">
@@ -320,7 +320,7 @@ const ServicesPage = () => {
               ✓ Garantie 12 mois
             </span>
             <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm font-medium">
-              ✓ Pièces d'origine
+              ✓ Pièces d&apos;origine
             </span>
             <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm font-medium">
               ✓ Devis gratuit

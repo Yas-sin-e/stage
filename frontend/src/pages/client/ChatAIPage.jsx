@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
@@ -56,8 +56,6 @@ const ChatAIPage = () => {
   const [messages, setMessages] = useState(loadMessagesFromStorage);
   const [isLoading, setIsLoading] = useState(false);
   const [ollamaStatus, setOllamaStatus] = useState("checking");
-  const [hasUserInteracted, setHasUserInteracted] = useState(false);
-
   // Sauvegarder les messages automatiquement quand ils changent
   useEffect(() => {
     saveMessagesToStorage(messages);
@@ -88,7 +86,7 @@ const ChatAIPage = () => {
           },
         ]);
       }
-    } catch (error) {
+    } catch {
       setOllamaStatus("offline");
       setMessages((prev) => [
         ...prev,
@@ -99,10 +97,6 @@ const ChatAIPage = () => {
         },
       ]);
     }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -122,7 +116,6 @@ const ChatAIPage = () => {
     // Ajouter le message utilisateur aux messages existants
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
-    const currentInput = data.message;
     setValue("message", "");
     setIsLoading(true);
 
@@ -174,7 +167,7 @@ const ChatAIPage = () => {
     const resetMessages = [
       {
         sender: "bot",
-        text: "✅ Conversation réinitialisée.\n\nPour un diagnostic précis, précisez :\n1️⃣ Type de véhicule\n2️⃣ Année\n3️⃣ Motorisation\n\nComment puis-je vous aider ?",
+        text: "👋 Bonjour ! Je suis **AutoExpert**, votre assistant professionnel.\n\n🔧 Je peux vous aider avec :\n• Diagnostics de pannes\n• Conseils d'entretien\n• Problèmes électriques\n• Carrosserie\n\n📋 Pour un diagnostic précis, j'ai besoin de :\n1️⃣ Type de véhicule (citadine/berline/SUV)\n2️⃣ Année de fabrication\n3️⃣ Motorisation (essence/diesel/hybride)\n\nPosez votre question !",
         timestamp: new Date(),
       },
     ];
@@ -281,7 +274,7 @@ const ChatAIPage = () => {
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            <span className="hidden md:inline">Reset</span>
+            <span className="hidden md:inline">Effacer</span>
           </button>
         </div>
       </div>

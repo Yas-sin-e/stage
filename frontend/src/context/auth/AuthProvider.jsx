@@ -33,20 +33,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    try {
-      const data = await authService.login(email, password);
-      setUser(data.user);
+    const data = await authService.login(email, password);
+    setUser(data.user);
 
-      if (data.user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
-
-      return { success: true };
-    } catch (error) {
-      throw error;
+    if (data.user.role === "admin") {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/dashboard");
     }
+
+    return { success: true };
   };
 
   const register = async (userData) => {

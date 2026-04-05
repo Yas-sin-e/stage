@@ -7,7 +7,7 @@ const { protect } = require("../middleware/authMiddleware");
 const { Error } = require("mongoose");
 const sendEmail = require("../utils/sendEmail");
 
-// Générer JWT
+// Générer JWBT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
@@ -68,7 +68,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
 
-    // Vérifier si actif
+    // Vérifier si actif 
     if (!user.isActive) {
       return res.status(403).json({ message: "Compte désactivé" });
     }
@@ -185,7 +185,7 @@ router.put("/change-password", protect, async (req, res) => {
 });
 
 // @route   DELETE /api/auth/profile
-// @desc    Supprimer le compte
+// @desc    Supprimer le compte  (mais pas encore cree dans le frontend)
 // @access  Private
 router.delete("/profile", protect, async (req, res) => {
   try {
@@ -217,7 +217,7 @@ router.delete("/profile", protect, async (req, res) => {
 // @access  Public
 router.post("/forgot-password", async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email } = req.body; 
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -252,7 +252,7 @@ router.post("/forgot-password", async (req, res) => {
     } catch (emailError) {
       // En cas d'erreur d'email, afficher le lien dans la console (dev only)
       console.log("\n===========================================");
-      console.log("🔐 LIEN DE RÉINITIALISATION (DÉVELOPPEMENT):");
+      console.log(" LIEN DE RÉINITIALISATION (DÉVELOPPEMENT):");
       console.log("===========================================");
       console.log(`Email: ${user.email}`);
       console.log(`Lien: ${resetUrl}`);
@@ -281,12 +281,16 @@ router.post("/reset-password/:token", async (req, res) => {
 
     const user = await User.findOne({
       resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() }
+      resetPasswordExpire: { $gt: Date.now()  } 
+
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Token invalide ou expiré" });
+      return res.status(400).json({ message: "Token invalide " });
     }
+    if (user.resetPasswordExpire < Date.now()) {
+  return res.status(400).json({ message: "Token expiré — faites une nouvelle demande" });
+}
 
     user.password = password;
     user.resetPasswordToken = undefined;
